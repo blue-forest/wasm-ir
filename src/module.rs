@@ -2,12 +2,12 @@ use std::fs::File;
 use std::io::{Result, Write};
 use std::path::Path;
 
-use crate::{Body, Compilable, FunctionType};
+use crate::{Body, Compilable, FunctionType, Import, ImportDescription};
 use crate::values::from_u32;
 
 pub struct Module {
   sec_type:   Vec<FunctionType>,
-  // sec_import: Vec<Vec<u8>>,
+  sec_import: Vec<ModuleImport>,
   sec_func:   Vec<u32>,
   // sec_table:  Vec<Vec<u8>>,
   // sec_mem:    Vec<Vec<u8>>,
@@ -25,7 +25,7 @@ impl Module {
   pub fn new() -> Self {
     Self{
       sec_type:   Vec::new(),
-      // sec_import: Vec::new(),
+      sec_import: Vec::new(),
       sec_func:   Vec::new(),
       // sec_table:  Vec::new(),
       // sec_mem:    Vec::new(),
@@ -40,14 +40,23 @@ impl Module {
     }
   }
 
-  pub fn add_function(&mut self, profile: FunctionType, body: Body) -> u32 {
-    let type_idx = self.sec_type.len();
+  pub fn import_function(&mut self, profile: FunctionType, import: Import) {
+    let type_idx = self.sec_type.len() as u32;
     self.sec_type.push(profile);
-    let function_idx = self.sec_func.len();
+    self.sec_import.push(ModuleImport{
+      import,
+      description: ImportDescription::Func(type_idx),
+    });
+  }
+
+  pub fn add_function(&mut self, profile: FunctionType, body: Body) -> u32 {
+    let type_idx = self.sec_type.len() as u32;
+    self.sec_type.push(profile);
+    let function_idx = self.sec_func.len() as u32;
     // FIXME: catch `as u32` overflow
-    self.sec_func.push(type_idx as u32);
+    self.sec_func.push(type_idx);
     self.sec_code.push(body);
-    function_idx as u32
+    function_idx
   }
 
   /*
@@ -74,6 +83,19 @@ impl Module {
       }
       file.write_all(&[0x01])?; // section id
       let vec_len = from_u32(self.sec_type.len() as u32);
+      file.write_all(&from_u32(
+          (section_content.len() + vec_len.len()) as u32
+      ))?;
+      file.write_all(&vec_len)?;
+      file.write_all(&section_content)?;
+    }
+    if !self.sec_import.is_empty() {
+      let mut section_content = Vec::new();
+      for import in self.sec_import.iter() {
+        import.compile(&mut section_content);
+      }
+      file.write_all(&[0x02])?; // section id
+      let vec_len = from_u32(self.sec_import.len() as u32);
       file.write_all(&from_u32(
           (section_content.len() + vec_len.len()) as u32
       ))?;
@@ -110,3 +132,19 @@ impl Module {
   }
 }
 
+struct ModuleImport {
+  pub import: Import,
+  pub description: ImportDescription,
+}
+
+impl Compilable for ModuleImport {
+  fn compile(&self, buf: &mut Vec<u8>) {
+    self.import.compile(buf);
+    match self.description {
+      ImportDescription::Func(type_idx) => {
+        buf.push(0x00);
+        buf.extend(&from_u32(type_idx));
+      }
+    }
+  }
+}
