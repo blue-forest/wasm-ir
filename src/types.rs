@@ -1,8 +1,5 @@
+use crate::Compilable;
 use crate::values::from_u32;
-
-pub trait Type {
-  fn compile(&self) -> Vec<u8>;
-}
 
 // val type
 pub const I32        : u8 = 0x7f;
@@ -24,13 +21,12 @@ impl FunctionType {
   }
 }
 
-impl Type for FunctionType {
-  fn compile(&self) -> Vec<u8> {
-    let mut result = vec![0x60];
-    result.extend(from_u32(self.parameters.len() as u32));
-    result.extend(&self.parameters);
-    result.extend(from_u32(self.result.len() as u32));
-    result.extend(&self.result);
-    result
+impl Compilable for FunctionType {
+  fn compile(&self, buf: &mut Vec<u8>) {
+    buf.push(0x60);
+    buf.extend(from_u32(self.parameters.len() as u32));
+    buf.extend(&self.parameters);
+    buf.extend(from_u32(self.result.len() as u32));
+    buf.extend(&self.result);
   }
 }
