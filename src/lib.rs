@@ -1,8 +1,8 @@
 pub mod code;
 pub use code::{Body, Instruction};
 
-mod import;
-pub use import::{Import, ImportDescription};
+mod import_export;
+pub use import_export::{Export, Import, ImportExportDescription};
 
 mod module;
 pub use module::Module;

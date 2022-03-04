@@ -24,9 +24,3 @@ impl Compilable for Import {
   }
 }
 
-pub enum ImportDescription {
-  Func(u32),
-  // Table(),
-  // Mem(),
-  // Global(),
-}
