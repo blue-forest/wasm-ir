@@ -1,11 +1,14 @@
 pub mod code;
 pub use code::{Body, Instruction};
 
+mod export;
+pub use export::{Export, ExportDescription};
+
 mod function;
 pub use function::Function;
 
-mod import_export;
-pub use import_export::{Export, Import, ImportExportDescription};
+mod import;
+pub use import::{Import, ImportDescription};
 
 mod module;
 pub use module::Module;

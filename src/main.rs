@@ -1,11 +1,12 @@
 use std::path::Path;
 
-use wasm_ir::{Body, FunctionType, I32, Import, Module};
+use wasm_ir::{Body, FunctionType, I32, Import, Limit, Module};
 use wasm_ir::code::numeric::I32Const;
 use wasm_ir::code::memory::I32Store;
 
 fn main() {
   let mut ir = Module::new();
+  ir.set_memory(Limit::new(1, None));
 
   let fd_write_type = FunctionType::new(
     vec![I32, I32, I32, I32],
@@ -25,6 +26,6 @@ fn main() {
     ),
   ]);
 
-  ir.add_function(start_type, start_body);
+  ir.add_exported_function(start_type, start_body, "_start".to_string());
   ir.write(Path::new("gen.wasm")).unwrap();
 }

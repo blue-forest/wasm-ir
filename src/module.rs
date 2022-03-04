@@ -6,10 +6,12 @@ use crate::{
   Body,
   Compilable,
   Export,
+  ExportDescription,
   Function,
   FunctionType,
   Import,
-  ImportExportDescription,
+  ImportDescription,
+  Limit,
 };
 use crate::values::from_u32;
 
@@ -17,16 +19,16 @@ pub struct Module {
   sec_type:   Vec<Box<dyn Compilable>>,
   sec_import: Vec<Box<dyn Compilable>>,
   sec_func:   Vec<Box<dyn Compilable>>,
-  // sec_table:  Vec<Vec<u8>>,
-  // sec_mem:    Vec<Vec<u8>>,
-  // sec_global: Vec<Vec<u8>>,
+  // sec_table:  Vec<Box<dyn Compilable>>,
+  sec_mem:    Vec<Box<dyn Compilable>>,
+  // sec_global: Vec<Box<dyn Compilable>>,
   sec_export: Vec<Box<dyn Compilable>>,
-  // sec_start:  Vec<Vec<u8>>,
-  // sec_elem:   Vec<Vec<u8>>,
-  // data_count: Vec<Vec<u8>>,
+  // sec_start:  Vec<Box<dyn Compilable>>,
+  // sec_elem:   Vec<Box<dyn Compilable>>,
+  // data_count: Vec<Box<dyn Compilable>>,
   sec_code:   Vec<Box<dyn Compilable>>,
-  // sec_data:   Vec<Vec<u8>>,
-  // sec_custom: Vec<Vec<u8>>,
+  // sec_data:   Vec<Box<dyn Compilable>>,
+  // sec_custom: Vec<Box<dyn Compilable>>,
 }
 
 impl Module {
@@ -36,7 +38,7 @@ impl Module {
       sec_import: Vec::new(),
       sec_func:   Vec::new(),
       // sec_table:  Vec::new(),
-      // sec_mem:    Vec::new(),
+      sec_mem:    Vec::new(),
       // sec_global: Vec::new(),
       sec_export: Vec::new(),
       // sec_start:  Vec::new(),
@@ -53,27 +55,45 @@ impl Module {
     self.sec_type.push(Box::new(profile));
     self.sec_import.push(Box::new(ModuleImport{
       import,
-      description: ImportExportDescription::Func(type_idx),
+      description: ImportDescription::Func(type_idx),
     }));
   }
 
-  pub fn export_function(&mut self, profile: FunctionType, export: Export) {
-    let type_idx = self.sec_type.len() as u32;
-    self.sec_type.push(Box::new(profile));
-    self.sec_export.push(Box::new(ModuleExport{
-      export,
-      description: ImportExportDescription::Func(type_idx),
-    }));
-  }
-
-  pub fn add_function(&mut self, profile: FunctionType, body: Body) -> u32 {
+  pub fn add_function(
+    &mut self,
+    profile: FunctionType,
+    body:    Body,
+  ) -> (u32, u32) {
     let type_idx = self.sec_type.len() as u32;
     self.sec_type.push(Box::new(profile));
     let function_idx = self.sec_func.len() as u32;
     // FIXME: catch `as u32` overflow
     self.sec_func.push(Box::new(Function::new(type_idx)));
     self.sec_code.push(Box::new(body));
-    function_idx
+    (type_idx, function_idx)
+  }
+
+  pub fn add_exported_function(
+    &mut self,
+    profile: FunctionType,
+    body:    Body,
+    name:    String,
+  ) -> u32 {
+    let (type_idx, _) = self.add_function(profile, body);
+    self.sec_export.push(Box::new(ModuleExport{
+      export:      Export::new(name),
+      description: ExportDescription::Func(type_idx),
+    }));
+    type_idx
+  }
+
+  pub fn set_memory(&mut self, limit: Limit) {
+    let mem_idx = self.sec_mem.len() as u32;
+    self.sec_mem.push(Box::new(limit));
+    self.sec_export.push(Box::new(ModuleExport{
+      export:      Export::new("memory".to_string()),
+      description: ExportDescription::Mem(mem_idx),
+    }));
   }
 
   pub fn write(&self, filename: &Path) -> Result<()> {
@@ -82,25 +102,27 @@ impl Module {
     file.write_all(&[0x00, 0x61, 0x73, 0x6d])?;
     // version
     file.write_all(&[0x01, 0x00, 0x00, 0x00])?;
-    compile_section(&mut file, &self.sec_type, 0x01)?;
+
+    compile_section(&mut file, &self.sec_type,   0x01)?;
     compile_section(&mut file, &self.sec_import, 0x02)?;
-    compile_section(&mut file, &self.sec_func, 0x03)?;
+    compile_section(&mut file, &self.sec_func,   0x03)?;
+    compile_section(&mut file, &self.sec_mem,    0x05)?;
     compile_section(&mut file, &self.sec_export, 0x07)?;
-    compile_section(&mut file, &self.sec_code, 0x0a)?;
+    compile_section(&mut file, &self.sec_code,   0x0a)?;
     Ok(())
   }
 }
 
 struct ModuleImport {
   pub import:      Import,
-  pub description: ImportExportDescription,
+  pub description: ImportDescription,
 }
 
 impl Compilable for ModuleImport {
   fn compile(&self, buf: &mut Vec<u8>) {
     self.import.compile(buf);
     match self.description {
-      ImportExportDescription::Func(type_idx) => {
+      ImportDescription::Func(type_idx) => {
         buf.push(0x00);
         buf.extend(&from_u32(type_idx));
       }
@@ -110,17 +132,22 @@ impl Compilable for ModuleImport {
 
 struct ModuleExport {
   pub export:      Export,
-  pub description: ImportExportDescription,
+  pub description: ExportDescription,
 }
 
 impl Compilable for ModuleExport {
   fn compile(&self, buf: &mut Vec<u8>) {
     self.export.compile(buf);
     match self.description {
-      ImportExportDescription::Func(type_idx) => {
+      ExportDescription::Func(type_idx) => {
         buf.push(0x00);
         buf.extend(&from_u32(type_idx));
       }
+      ExportDescription::Mem(mem_idx) => {
+        buf.push(0x02);
+        buf.extend(&from_u32(mem_idx));
+      }
+      _ => { todo!() }
     }
   }
 }

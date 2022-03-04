@@ -18,3 +18,9 @@ impl Compilable for Export {
   }
 }
 
+pub enum ExportDescription {
+  Func(u32),
+  Table(u32),
+  Mem(u32),
+  Global(u32),
+}
