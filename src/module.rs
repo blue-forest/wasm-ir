@@ -5,6 +5,7 @@ use std::path::Path;
 use crate::{
   Body,
   Compilable,
+  Data,
   Export,
   ExportDescription,
   Function,
@@ -27,7 +28,7 @@ pub struct Module {
   // sec_elem:   Vec<Box<dyn Compilable>>,
   // data_count: Vec<Box<dyn Compilable>>,
   sec_code:   Vec<Box<dyn Compilable>>,
-  // sec_data:   Vec<Box<dyn Compilable>>,
+  sec_data:   Vec<Box<dyn Compilable>>,
   // sec_custom: Vec<Box<dyn Compilable>>,
 }
 
@@ -45,7 +46,7 @@ impl Module {
       // sec_elem:   Vec::new(),
       // data_count: Vec::new(),
       sec_code:   Vec::new(),
-      // sec_data:   Vec::new(),
+      sec_data:   Vec::new(),
       // sec_custom: Vec::new(),
     }
   }
@@ -87,6 +88,10 @@ impl Module {
     type_idx
   }
 
+  pub fn add_data(&mut self, data: Data) {
+    self.sec_data.push(Box::new(data));
+  }
+
   pub fn set_memory(&mut self, limit: Limit) {
     let mem_idx = self.sec_mem.len() as u32;
     self.sec_mem.push(Box::new(limit));
@@ -109,6 +114,7 @@ impl Module {
     compile_section(&mut file, &self.sec_mem,    0x05)?;
     compile_section(&mut file, &self.sec_export, 0x07)?;
     compile_section(&mut file, &self.sec_code,   0x0a)?;
+    compile_section(&mut file, &self.sec_data,   0x0b)?;
     Ok(())
   }
 }

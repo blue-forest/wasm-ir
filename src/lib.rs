@@ -1,6 +1,9 @@
 pub mod code;
 pub use code::{Body, Instruction};
 
+mod data;
+pub use data::{Data, DataMode};
+
 mod export;
 pub use export::{Export, ExportDescription};
 

@@ -24,6 +24,7 @@ impl Compilable for Body {
     }
     buf.extend(&from_u32(code.len() as u32));
     buf.extend(code);
+    buf.push(0x0b); // end
   }
 }
 
