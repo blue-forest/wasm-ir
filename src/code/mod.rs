@@ -1,8 +1,10 @@
 use crate::Compilable;
 use crate::values::from_u32;
 
+pub mod control;
 pub mod memory;
 pub mod numeric;
+pub mod parametric;
 
 pub struct Body {
   // TODO: locals
@@ -22,7 +24,7 @@ impl Compilable for Body {
     for instruction in self.instructions.iter() {
       instruction.compile(&mut code);
     }
-    buf.extend(&from_u32(code.len() as u32));
+    buf.extend(&from_u32((code.len() + 1) as u32)); // +1 for the end
     buf.extend(code);
     buf.push(0x0b); // end
   }

@@ -51,27 +51,32 @@ impl Module {
     }
   }
 
-  pub fn import_function(&mut self, profile: FunctionType, import: Import) {
+  pub fn import_function(
+    &mut self,
+    profile: FunctionType,
+    import:  Import,
+  ) -> u32 {
     let type_idx = self.sec_type.len() as u32;
     self.sec_type.push(Box::new(profile));
     self.sec_import.push(Box::new(ModuleImport{
       import,
       description: ImportDescription::Func(type_idx),
     }));
+    type_idx
   }
 
   pub fn add_function(
     &mut self,
     profile: FunctionType,
     body:    Body,
-  ) -> (u32, u32) {
+  ) -> u32 {
     let type_idx = self.sec_type.len() as u32;
     self.sec_type.push(Box::new(profile));
-    let function_idx = self.sec_func.len() as u32;
+    self.sec_func.len() as u32;
     // FIXME: catch `as u32` overflow
     self.sec_func.push(Box::new(Function::new(type_idx)));
     self.sec_code.push(Box::new(body));
-    (type_idx, function_idx)
+    type_idx
   }
 
   pub fn add_exported_function(
@@ -80,7 +85,7 @@ impl Module {
     body:    Body,
     name:    String,
   ) -> u32 {
-    let (type_idx, _) = self.add_function(profile, body);
+    let type_idx = self.add_function(profile, body);
     self.sec_export.push(Box::new(ModuleExport{
       export:      Export::new(name),
       description: ExportDescription::Func(type_idx),
