@@ -1,3 +1,5 @@
+// This code is free software distributed under GPLv3 by Blue Forest.
+
 pub fn from_u32(value: u32) -> Vec<u8> {
   let mut result = Vec::new();
   let mut current = value;

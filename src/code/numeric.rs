@@ -1,3 +1,5 @@
+// This code is free software distributed under GPLv3 by Blue Forest.
+
 use crate::Compilable;
 use crate::values::from_u32;
 

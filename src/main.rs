@@ -1,3 +1,5 @@
+// This code is free software distributed under GPLv3 by Blue Forest.
+
 use std::path::Path;
 
 use wasm_ir::{Body, Data, DataMode, FunctionType, I32, Import, Limit, Module};

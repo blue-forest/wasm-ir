@@ -1,3 +1,5 @@
+// This code is free software distributed under GPLv3 by Blue Forest.
+
 use std::fs::File;
 use std::io::{Result, Write};
 use std::path::Path;
