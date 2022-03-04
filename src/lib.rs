@@ -1,6 +1,9 @@
 pub mod code;
 pub use code::{Body, Instruction};
 
+mod function;
+pub use function::Function;
+
 mod import_export;
 pub use import_export::{Export, Import, ImportExportDescription};
 

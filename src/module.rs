@@ -6,6 +6,7 @@ use crate::{
   Body,
   Compilable,
   Export,
+  Function,
   FunctionType,
   Import,
   ImportExportDescription,
@@ -13,17 +14,17 @@ use crate::{
 use crate::values::from_u32;
 
 pub struct Module {
-  sec_type:   Vec<FunctionType>,
-  sec_import: Vec<ModuleImport>,
-  sec_func:   Vec<u32>,
+  sec_type:   Vec<Box<dyn Compilable>>,
+  sec_import: Vec<Box<dyn Compilable>>,
+  sec_func:   Vec<Box<dyn Compilable>>,
   // sec_table:  Vec<Vec<u8>>,
   // sec_mem:    Vec<Vec<u8>>,
   // sec_global: Vec<Vec<u8>>,
-  sec_export: Vec<ModuleExport>,
+  sec_export: Vec<Box<dyn Compilable>>,
   // sec_start:  Vec<Vec<u8>>,
   // sec_elem:   Vec<Vec<u8>>,
   // data_count: Vec<Vec<u8>>,
-  sec_code:   Vec<Body>,
+  sec_code:   Vec<Box<dyn Compilable>>,
   // sec_data:   Vec<Vec<u8>>,
   // sec_custom: Vec<Vec<u8>>,
 }
@@ -49,29 +50,29 @@ impl Module {
 
   pub fn import_function(&mut self, profile: FunctionType, import: Import) {
     let type_idx = self.sec_type.len() as u32;
-    self.sec_type.push(profile);
-    self.sec_import.push(ModuleImport{
+    self.sec_type.push(Box::new(profile));
+    self.sec_import.push(Box::new(ModuleImport{
       import,
       description: ImportExportDescription::Func(type_idx),
-    });
+    }));
   }
 
   pub fn export_function(&mut self, profile: FunctionType, export: Export) {
     let type_idx = self.sec_type.len() as u32;
-    self.sec_type.push(profile);
-    self.sec_export.push(ModuleExport{
+    self.sec_type.push(Box::new(profile));
+    self.sec_export.push(Box::new(ModuleExport{
       export,
       description: ImportExportDescription::Func(type_idx),
-    });
+    }));
   }
 
   pub fn add_function(&mut self, profile: FunctionType, body: Body) -> u32 {
     let type_idx = self.sec_type.len() as u32;
-    self.sec_type.push(profile);
+    self.sec_type.push(Box::new(profile));
     let function_idx = self.sec_func.len() as u32;
     // FIXME: catch `as u32` overflow
-    self.sec_func.push(type_idx);
-    self.sec_code.push(body);
+    self.sec_func.push(Box::new(Function::new(type_idx)));
+    self.sec_code.push(Box::new(body));
     function_idx
   }
 
@@ -81,71 +82,11 @@ impl Module {
     file.write_all(&[0x00, 0x61, 0x73, 0x6d])?;
     // version
     file.write_all(&[0x01, 0x00, 0x00, 0x00])?;
-    if !self.sec_type.is_empty() {
-      let mut section_content = Vec::new();
-      for type_ in self.sec_type.iter() {
-        type_.compile(&mut section_content);
-      }
-      file.write_all(&[0x01])?; // section id
-      let vec_len = from_u32(self.sec_type.len() as u32);
-      file.write_all(&from_u32(
-        (section_content.len() + vec_len.len()) as u32
-      ))?;
-      file.write_all(&vec_len)?;
-      file.write_all(&section_content)?;
-    }
-    if !self.sec_import.is_empty() {
-      let mut section_content = Vec::new();
-      for import in self.sec_import.iter() {
-        import.compile(&mut section_content);
-      }
-      file.write_all(&[0x02])?; // section id
-      let vec_len = from_u32(self.sec_import.len() as u32);
-      file.write_all(&from_u32(
-        (section_content.len() + vec_len.len()) as u32
-      ))?;
-      file.write_all(&vec_len)?;
-      file.write_all(&section_content)?;
-    }
-    if !self.sec_func.is_empty() {
-      let mut section_content = Vec::new();
-      for function_idx in self.sec_func.iter() {
-        section_content.extend(&from_u32(*function_idx));
-      }
-      file.write_all(&[0x03])?; // section id
-      let vec_len = from_u32(self.sec_func.len() as u32);
-      file.write_all(&from_u32(
-        (section_content.len() + vec_len.len()) as u32
-      ))?;
-      file.write_all(&vec_len)?;
-      file.write_all(&section_content)?;
-    }
-    if !self.sec_export.is_empty() {
-      let mut section_content = Vec::new();
-      for export in self.sec_export.iter() {
-        export.compile(&mut section_content);
-      }
-      file.write_all(&[0x07])?; // section id
-      let vec_len = from_u32(self.sec_export.len() as u32);
-      file.write_all(&from_u32(
-        (section_content.len() + vec_len.len()) as u32
-      ))?;
-      file.write_all(&vec_len)?;
-      file.write_all(&section_content)?;
-    }
-    if !self.sec_code.is_empty() {
-      let mut section_content = Vec::new();
-      for body in self.sec_code.iter() {
-        body.compile(&mut section_content);
-      }
-      file.write_all(&[0x0a])?; // section id
-      let vec_len = from_u32(self.sec_code.len() as u32);
-      file.write_all(&from_u32(
-        (section_content.len() + vec_len.len()) as u32
-      ))?;
-      file.write_all(&vec_len)?;
-      file.write_all(&section_content)?;
-    }
+    compile_section(&mut file, &self.sec_type, 0x01)?;
+    compile_section(&mut file, &self.sec_import, 0x02)?;
+    compile_section(&mut file, &self.sec_func, 0x03)?;
+    compile_section(&mut file, &self.sec_export, 0x07)?;
+    compile_section(&mut file, &self.sec_code, 0x0a)?;
     Ok(())
   }
 }
@@ -182,4 +123,25 @@ impl Compilable for ModuleExport {
       }
     }
   }
+}
+
+fn compile_section(
+  file:       &mut File,
+  section:    &Vec<Box<dyn Compilable>>,
+  section_id: u8,
+) -> Result<()> {
+  if !section.is_empty() {
+    let mut section_content = Vec::new();
+    for entry in section.iter() {
+      entry.compile(&mut section_content);
+    }
+    file.write_all(&[section_id])?;
+    let vec_len = from_u32(section.len() as u32);
+    file.write_all(&from_u32(
+      (section_content.len() + vec_len.len()) as u32
+    ))?;
+    file.write_all(&vec_len)?;
+    file.write_all(&section_content)?;
+  }
+  Ok(())
 }
