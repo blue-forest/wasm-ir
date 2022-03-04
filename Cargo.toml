@@ -1,5 +1,10 @@
 [package]
 name = "wasm-ir"
 version = "0.1.0"
+authors = ["Nazim Lachter <nazim@blueforest.cc>", "Vulcain <vulcain@blueforest.cc>"]
 edition = "2021"
-
+description = "An Intermediate Representation of WebAssembly"
+repository = "https://github.com/theblueforest/wasm-ir"
+license = "GPL-3.0"
+license-file = "LICENSE"
+keywords = ["WebAssembly"]
