@@ -18,8 +18,8 @@ impl I32Store {
     offset:  u32,
     address: Box<dyn Instruction>,
     value:   Box<dyn Instruction>,
-  ) -> Self {
-    Self{ align, offset, address, value }
+  ) -> Box<Self> {
+    Box::new(Self{ align, offset, address, value })
   }
 }
 

@@ -8,8 +8,8 @@ use super::Instruction;
 pub struct I32Const(u32);
 
 impl I32Const {
-  pub fn new(value: u32) -> Self {
-    Self(value)
+  pub fn new(value: u32) -> Box<Self> {
+    Box::new(Self(value))
   }
 }
 
