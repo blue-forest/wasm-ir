@@ -108,20 +108,24 @@ impl Module {
     }));
   }
 
+  pub fn compile(&self) -> Vec<u8> {
+    let mut result = vec![
+      0x00, 0x61, 0x73, 0x6d, // magic
+      0x01, 0x00, 0x00, 0x00, // version
+    ];
+    compile_section(&mut result, &self.sec_type,   0x01);
+    compile_section(&mut result, &self.sec_import, 0x02);
+    compile_section(&mut result, &self.sec_func,   0x03);
+    compile_section(&mut result, &self.sec_mem,    0x05);
+    compile_section(&mut result, &self.sec_export, 0x07);
+    compile_section(&mut result, &self.sec_code,   0x0a);
+    compile_section(&mut result, &self.sec_data,   0x0b);
+    result
+  }
+
   pub fn write(&self, filename: &Path) -> Result<()> {
     let mut file = File::create(filename)?;
-    // magic
-    file.write_all(&[0x00, 0x61, 0x73, 0x6d])?;
-    // version
-    file.write_all(&[0x01, 0x00, 0x00, 0x00])?;
-
-    compile_section(&mut file, &self.sec_type,   0x01)?;
-    compile_section(&mut file, &self.sec_import, 0x02)?;
-    compile_section(&mut file, &self.sec_func,   0x03)?;
-    compile_section(&mut file, &self.sec_mem,    0x05)?;
-    compile_section(&mut file, &self.sec_export, 0x07)?;
-    compile_section(&mut file, &self.sec_code,   0x0a)?;
-    compile_section(&mut file, &self.sec_data,   0x0b)?;
+    file.write_all(&self.compile())?;
     Ok(())
   }
 }
@@ -166,22 +170,21 @@ impl Compilable for ModuleExport {
 }
 
 fn compile_section(
-  file:       &mut File,
+  buf:        &mut Vec<u8>,
   section:    &Vec<Box<dyn Compilable>>,
   section_id: u8,
-) -> Result<()> {
+) {
   if !section.is_empty() {
     let mut section_content = Vec::new();
     for entry in section.iter() {
       entry.compile(&mut section_content);
     }
-    file.write_all(&[section_id])?;
+    buf.push(section_id);
     let vec_len = from_u32(section.len() as u32);
-    file.write_all(&from_u32(
+    buf.extend(&from_u32(
       (section_content.len() + vec_len.len()) as u32
-    ))?;
-    file.write_all(&vec_len)?;
-    file.write_all(&section_content)?;
+    ));
+    buf.extend(&vec_len);
+    buf.extend(&section_content);
   }
-  Ok(())
 }

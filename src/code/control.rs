@@ -14,8 +14,8 @@ impl Call {
   pub fn new(
     function_idx: u32,
     parameters:   Vec<Box<dyn Instruction>>
-  ) -> Self {
-    Self{ function_idx, parameters }
+  ) -> Box<Self> {
+    Box::new(Self{ function_idx, parameters })
   }
 }
 

@@ -6,6 +6,12 @@ use super::Instruction;
 
 pub struct DropStack{}
 
+impl DropStack {
+  pub fn new() -> Box<Self> {
+    Box::new(Self{})
+  }
+}
+
 impl Compilable for DropStack {
   fn compile(&self, buf: &mut Vec<u8>) {
     buf.push(0x1a);
