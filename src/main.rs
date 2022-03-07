@@ -14,7 +14,7 @@ fn main() {
   ir.add_data(Data::new(
     "hello world\n".to_string().into_bytes(),
     DataMode::Active(
-      Box::new(I32Const::new(8)),
+      I32Const::new(8),
     ),
   ));
 
@@ -28,28 +28,24 @@ fn main() {
 
   let start_type = FunctionType::new(vec![], vec![]);
   let start_body = Body::new(vec![
-    Box::new(
-      I32Store::new(2, 0,
-        Box::new(I32Const::new(0)),
-        Box::new(I32Const::new(8)),
-      ),
+    I32Store::new(2, 0,
+      I32Const::new(0),
+      I32Const::new(8),
     ),
-    Box::new(
-      I32Store::new(2, 0,
-        Box::new(I32Const::new(4)),
-        Box::new(I32Const::new(12)),
-      ),
+    I32Store::new(2, 0,
+      I32Const::new(4),
+      I32Const::new(12),
     ),
-    Box::new(Call::new(
+    Call::new(
       fd_write_idx,
       vec![
-        Box::new(I32Const::new(1)),
-        Box::new(I32Const::new(0)),
-        Box::new(I32Const::new(1)),
-        Box::new(I32Const::new(20)),
+        I32Const::new(1),
+        I32Const::new(0),
+        I32Const::new(1),
+        I32Const::new(20),
       ],
-    )),
-    Box::new(DropStack{}),
+    ),
+    DropStack::new(),
   ]);
   ir.add_exported_function(start_type, start_body, "_start".to_string());
   ir.write(Path::new("gen.wasm")).unwrap();
