@@ -12,45 +12,59 @@ use crate::{
   ExportDescription,
   Function,
   FunctionType,
+  FUNC_REF,
   Import,
   ImportDescription,
   Limit,
+  Table,
 };
 use crate::values::from_u32;
 
 pub struct Module {
-  sec_type:   Vec<Box<dyn Compilable>>,
-  sec_import: Vec<Box<dyn Compilable>>,
-  sec_func:   Vec<Box<dyn Compilable>>,
-  // sec_table:  Vec<Box<dyn Compilable>>,
-  sec_mem:    Vec<Box<dyn Compilable>>,
-  // sec_global: Vec<Box<dyn Compilable>>,
-  sec_export: Vec<Box<dyn Compilable>>,
-  // sec_start:  Vec<Box<dyn Compilable>>,
-  // sec_elem:   Vec<Box<dyn Compilable>>,
-  // data_count: Vec<Box<dyn Compilable>>,
-  sec_code:   Vec<Box<dyn Compilable>>,
-  sec_data:   Vec<Box<dyn Compilable>>,
-  // sec_custom: Vec<Box<dyn Compilable>>,
+  sec_type:    Vec<Box<dyn Compilable>>,
+  sec_import:  Vec<Box<dyn Compilable>>,
+  sec_func:    Vec<Box<dyn Compilable>>,
+  sec_table:   Vec<Box<dyn Compilable>>,
+  sec_mem:     Vec<Box<dyn Compilable>>,
+  // sec_global:  Vec<Box<dyn Compilable>>,
+  sec_export:  Vec<Box<dyn Compilable>>,
+  // sec_start:   Vec<Box<dyn Compilable>>,
+  // sec_elem:    Vec<Box<dyn Compilable>>,
+  // data_count:  Vec<Box<dyn Compilable>>,
+  sec_code:    Vec<Box<dyn Compilable>>,
+  sec_data:    Vec<Box<dyn Compilable>>,
+  // sec_custom:  Vec<Box<dyn Compilable>>,
+  table_count: u32,
 }
 
 impl Module {
   pub fn new() -> Self {
     Self{
-      sec_type:   Vec::new(),
-      sec_import: Vec::new(),
-      sec_func:   Vec::new(),
-      // sec_table:  Vec::new(),
-      sec_mem:    Vec::new(),
-      // sec_global: Vec::new(),
-      sec_export: Vec::new(),
-      // sec_start:  Vec::new(),
-      // sec_elem:   Vec::new(),
-      // data_count: Vec::new(),
-      sec_code:   Vec::new(),
-      sec_data:   Vec::new(),
-      // sec_custom: Vec::new(),
+      sec_type:    Vec::new(),
+      sec_import:  Vec::new(),
+      sec_func:    Vec::new(),
+      sec_table:   Vec::new(),
+      sec_mem:     Vec::new(),
+      // sec_global:  Vec::new(),
+      sec_export:  Vec::new(),
+      // sec_start:   Vec::new(),
+      // sec_elem:    Vec::new(),
+      // data_count:  Vec::new(),
+      sec_code:    Vec::new(),
+      sec_data:    Vec::new(),
+      // sec_custom:  Vec::new(),
+      table_count: 0,
     }
+  }
+
+  pub fn import_table(&mut self, limit: Limit, import: Import) -> u32 {
+    self.sec_import.push(Box::new(ModuleImport{
+      import,
+      description: ImportDescription::Table(Table::new(FUNC_REF, limit)),
+    }));
+    let table_idx = self.table_count;
+    self.table_count += 1;
+    table_idx
   }
 
   pub fn import_function(
@@ -138,10 +152,13 @@ struct ModuleImport {
 impl Compilable for ModuleImport {
   fn compile(&self, buf: &mut Vec<u8>) {
     self.import.compile(buf);
-    match self.description {
+    match &self.description {
       ImportDescription::Func(type_idx) => {
         buf.push(0x00);
-        buf.extend(&from_u32(type_idx));
+        buf.extend(&from_u32(*type_idx));
+      }
+      ImportDescription::Table(table) => {
+        todo!()
       }
     }
   }
@@ -188,3 +205,4 @@ fn compile_section(
     buf.extend(&section_content);
   }
 }
+

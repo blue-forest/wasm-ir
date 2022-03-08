@@ -11,6 +11,7 @@ use wasm_ir::code::parametric::DropStack;
 fn main() {
   let mut ir = Module::new();
   ir.set_memory(Limit::new(1, None));
+  ir.import_table(Limit::new(1, None));
   ir.add_data(Data::new(
     "hello world\n".to_string().into_bytes(),
     DataMode::Active(
