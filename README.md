@@ -1,8 +1,10 @@
 # WebAssembly Intermediate Representation
 
+![GPL-3.0](https://img.shields.io/github/license/theblueforest/wasm-ir)
 ![Maintained](https://img.shields.io/badge/maintained-yes-green.svg)
 ![Unstable](https://img.shields.io/badge/stable-no-red.svg)
-![GitHub release (latest SemVer including pre-releases)](https://img.shields.io/github/v/release/theblueforest/dropin-compiler?include_prereleases)
+![Crates.io latest version](https://img.shields.io/crates/v/wasm-ir)
+![Crates.io total downloads](https://img.shields.io/crates/d/wasm-ir)
 
 This is an Intermediate Representation which can be compiled into WebAssembly.
 
