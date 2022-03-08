@@ -81,17 +81,27 @@ impl Module {
     type_idx
   }
 
+  pub fn add_function_type(
+    &mut self,
+    profile: FunctionType,
+  ) -> u32 {
+    let type_idx = self.sec_type.len() as u32;
+    self.sec_type.push(Box::new(profile));
+    type_idx
+  }
+
+  pub fn set_function_body(&mut self, type_idx: u32, body: Body) {
+    self.sec_func.push(Box::new(Function::new(type_idx)));
+    self.sec_code.push(Box::new(body));
+  }
+
   pub fn add_function(
     &mut self,
     profile: FunctionType,
     body:    Body,
   ) -> u32 {
-    let type_idx = self.sec_type.len() as u32;
-    self.sec_type.push(Box::new(profile));
-    self.sec_func.len() as u32;
-    // FIXME: catch `as u32` overflow
-    self.sec_func.push(Box::new(Function::new(type_idx)));
-    self.sec_code.push(Box::new(body));
+    let type_idx = self.add_function_type(profile);
+    self.set_function_body(type_idx, body);
     type_idx
   }
 

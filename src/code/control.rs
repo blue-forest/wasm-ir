@@ -30,3 +30,29 @@ impl Compilable for Call {
 }
 
 impl Instruction for Call {}
+
+pub struct CallIndirect {
+  type_idx:     u32,
+  table_idx:    u32,
+  parameters:   Vec<Box<dyn Instruction>>,
+  function_idx: Box<dyn Instruction>,
+}
+
+impl CallIndirect {
+  pub fn new(
+    type_idx:     u32,
+    table_idx:    u32,
+    parameters:   Vec<Box<dyn Instruction>>,
+    function_idx: Box<dyn Instruction>,
+  ) -> Box<Self> {
+    Box::new(Self{ type_idx, table_idx, parameters, function_idx })
+  }
+}
+
+impl Compilable for CallIndirect {
+  fn compile(&self, buf: &mut Vec<u8>) {
+    todo!()
+  }
+}
+
+impl Instruction for CallIndirect {}
