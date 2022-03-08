@@ -60,7 +60,7 @@ If you want to join the development and contribute to the project, please reach 
 - [ ] br\_table
 - [ ] return
 - [x] call
-- [ ] call\_indirect
+- [x] call\_indirect
 
 #### Reference
 
@@ -509,12 +509,12 @@ If you want to join the development and contribute to the project, please reach 
 - [x] Type
 - [ ] Import
   - [x] Func
-  - [ ] Table
+  - [x] Table
   - [ ] Mem
   - [ ] Global
 - [ ] Function
   - [ ] locals
-- [ ] Table
+- [x] Table
 - [x] Memory
 - [ ] Global
 - [ ] Export
