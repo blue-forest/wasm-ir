@@ -51,7 +51,13 @@ impl CallIndirect {
 
 impl Compilable for CallIndirect {
   fn compile(&self, buf: &mut Vec<u8>) {
-    todo!()
+    for parameter in self.parameters.iter() {
+      parameter.compile(buf);
+    }
+    self.function_idx.compile(buf);
+    buf.push(0x11);
+    buf.extend(&from_u32(self.type_idx));
+    buf.extend(&from_u32(self.table_idx));
   }
 }
 

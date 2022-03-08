@@ -90,19 +90,21 @@ impl Module {
     type_idx
   }
 
-  pub fn set_function_body(&mut self, type_idx: u32, body: Body) {
+  pub fn set_function_body(&mut self, type_idx: u32, body: Body) -> u32 {
+    let function_idx = self.sec_func.len() as u32;
     self.sec_func.push(Box::new(Function::new(type_idx)));
     self.sec_code.push(Box::new(body));
+    function_idx
   }
 
   pub fn add_function(
     &mut self,
     profile: FunctionType,
     body:    Body,
-  ) -> u32 {
+  ) -> (u32, u32) {
     let type_idx = self.add_function_type(profile);
-    self.set_function_body(type_idx, body);
-    type_idx
+    let function_idx = self.set_function_body(type_idx, body);
+    (type_idx, function_idx)
   }
 
   pub fn add_exported_function(
@@ -110,13 +112,13 @@ impl Module {
     profile: FunctionType,
     body:    Body,
     name:    String,
-  ) -> u32 {
-    let type_idx = self.add_function(profile, body);
+  ) -> (u32, u32) {
+    let (type_idx, function_idx) = self.add_function(profile, body);
     self.sec_export.push(Box::new(ModuleExport{
       export:      Export::new(name),
-      description: ExportDescription::Func(type_idx),
+      description: ExportDescription::Func(function_idx),
     }));
-    type_idx
+    (type_idx, function_idx)
   }
 
   pub fn add_data(&mut self, data: Data) {
@@ -140,6 +142,7 @@ impl Module {
     compile_section(&mut result, &self.sec_type,   0x01);
     compile_section(&mut result, &self.sec_import, 0x02);
     compile_section(&mut result, &self.sec_func,   0x03);
+    compile_section(&mut result, &self.sec_table,  0x04);
     compile_section(&mut result, &self.sec_mem,    0x05);
     compile_section(&mut result, &self.sec_export, 0x07);
     compile_section(&mut result, &self.sec_code,   0x0a);
@@ -168,7 +171,8 @@ impl Compilable for ModuleImport {
         buf.extend(&from_u32(*type_idx));
       }
       ImportDescription::Table(table) => {
-        todo!()
+        buf.push(0x01);
+        table.compile(buf);
       }
     }
   }

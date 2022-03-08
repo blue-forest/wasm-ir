@@ -13,5 +13,8 @@ impl Table {
 }
 
 impl Compilable for Table {
-  fn compile(&self, buf: &mut Vec<u8>) { todo!() }
+  fn compile(&self, buf: &mut Vec<u8>) {
+    buf.push(self.ref_type);
+    self.limit.compile(buf);
+  }
 }

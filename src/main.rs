@@ -13,7 +13,7 @@ fn main() {
   ir.write(Path::new("gen.wasm")).unwrap();
 }
 
-fn hello_world() -> Module {
+fn _hello_world() -> Module {
   let mut ir = Module::new();
   ir.set_memory(Limit::new(1, None));
   ir.add_data(Data::new(
@@ -61,13 +61,13 @@ fn test2() -> Module {
   let table_idx = ir.import_table(Limit::new(1, None), Import::new(
     "test".to_string(), "table".to_string(),
   ));
-  let type_idx = ir.add_function_type(
-    FunctionType::new(vec![], vec![]),
+  let imported_type = ir.add_function_type(
+    FunctionType::new(vec![I32], vec![]),
   );
-  ir.set_function_body(type_idx, Body::new(vec![
+  ir.add_exported_function(FunctionType::new(vec![], vec![]), Body::new(vec![
     CallIndirect::new(
-      type_idx, table_idx, Vec::new(), I32Const::new(0),
+      imported_type, table_idx, vec![I32Const::new(1)], I32Const::new(0),
     ),
-  ]));
+  ]), "_start".to_string());
   ir
 }
