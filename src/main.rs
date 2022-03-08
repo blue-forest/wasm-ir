@@ -3,12 +3,17 @@
 use std::path::Path;
 
 use wasm_ir::{Body, Data, DataMode, FunctionType, I32, Import, Limit, Module};
-use wasm_ir::code::control::Call;
+use wasm_ir::code::control::{Call, CallIndirect};
 use wasm_ir::code::numeric::I32Const;
 use wasm_ir::code::memory::I32Store;
 use wasm_ir::code::parametric::DropStack;
 
 fn main() {
+  let ir = test2();
+  ir.write(Path::new("gen.wasm")).unwrap();
+}
+
+fn _hello_world() -> Module {
   let mut ir = Module::new();
   ir.set_memory(Limit::new(1, None));
   ir.add_data(Data::new(
@@ -48,5 +53,21 @@ fn main() {
     DropStack::new(),
   ]);
   ir.add_exported_function(start_type, start_body, "_start".to_string());
-  ir.write(Path::new("gen.wasm")).unwrap();
+  ir
+}
+
+fn test2() -> Module {
+  let mut ir = Module::new();
+  let table_idx = ir.import_table(Limit::new(1, None), Import::new(
+    "test".to_string(), "table".to_string(),
+  ));
+  let imported_type = ir.add_function_type(
+    FunctionType::new(vec![I32], vec![]),
+  );
+  ir.add_exported_function(FunctionType::new(vec![], vec![]), Body::new(vec![
+    CallIndirect::new(
+      imported_type, table_idx, vec![I32Const::new(1)], I32Const::new(0),
+    ),
+  ]), "_start".to_string());
+  ir
 }

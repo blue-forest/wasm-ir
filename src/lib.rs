@@ -6,17 +6,20 @@ pub use code::{Body, Instruction};
 mod data;
 pub use data::{Data, DataMode};
 
-mod export;
-pub use export::{Export, ExportDescription};
+mod exports;
+pub use exports::{Export, ExportDescription};
 
-mod function;
-pub use function::Function;
+mod functions;
+pub use functions::Function;
 
-mod import;
-pub use import::{Import, ImportDescription};
+mod imports;
+pub use imports::{Import, ImportDescription};
 
-mod module;
-pub use module::Module;
+mod modules;
+pub use modules::Module;
+
+mod tables;
+pub use tables::Table;
 
 mod types;
 pub use types::*;
