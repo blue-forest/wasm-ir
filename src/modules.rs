@@ -35,6 +35,7 @@ pub struct Module {
   sec_data:    Vec<Box<dyn Compilable>>,
   // sec_custom:  Vec<Box<dyn Compilable>>,
   table_count: u32,
+  func_count:  u32,
 }
 
 impl Module {
@@ -54,6 +55,7 @@ impl Module {
       sec_data:    Vec::new(),
       // sec_custom:  Vec::new(),
       table_count: 0,
+      func_count:  0,
     }
   }
 
@@ -71,14 +73,16 @@ impl Module {
     &mut self,
     profile: FunctionType,
     import:  Import,
-  ) -> u32 {
+  ) -> (u32, u32) {
     let type_idx = self.sec_type.len() as u32;
     self.sec_type.push(Box::new(profile));
     self.sec_import.push(Box::new(ModuleImport{
       import,
       description: ImportDescription::Func(type_idx),
     }));
-    type_idx
+    let function_idx = self.func_count;
+    self.func_count += 1;
+    (type_idx, function_idx)
   }
 
   pub fn add_function_type(
@@ -91,9 +95,10 @@ impl Module {
   }
 
   pub fn set_function_body(&mut self, type_idx: u32, body: Body) -> u32 {
-    let function_idx = self.sec_func.len() as u32;
     self.sec_func.push(Box::new(Function::new(type_idx)));
     self.sec_code.push(Box::new(body));
+    let function_idx = self.func_count;
+    self.func_count += 1;
     function_idx
   }
 
