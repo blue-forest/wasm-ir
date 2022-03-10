@@ -1,5 +1,4 @@
 use std::io::Read;
-use std::path::Path;
 
 use wasm_ir::{Body, Data, DataMode, FunctionType, I32, Import, Limit, Module};
 use wasm_ir::code::control::Call;
@@ -9,8 +8,7 @@ use wasm_ir::code::parametric::DropStack;
 
 mod common;
 
-#[test]
-fn hello_world() {
+fn generate_hello_world() -> Module {
   let mut ir = Module::new();
   ir.set_memory(Limit::new(1, None));
   ir.add_data(Data::new(
@@ -41,15 +39,21 @@ fn hello_world() {
     Call::new(
       fd_write_idx,
       vec![
-        I32Const::new(1),
-        I32Const::new(0),
-        I32Const::new(1),
-        I32Const::new(20),
+        I32Const::new(1),  // file_descriptor - 1 for stdout
+        I32Const::new(0),  // *iovs
+        I32Const::new(1),  // iovs_len
+        I32Const::new(20), // nwritten
       ],
     ),
     DropStack::new(),
   ]);
   ir.add_exported_function(start_type, start_body, "_start".to_string());
+  ir
+}
+
+#[test]
+fn hello_world() {
+  let ir = generate_hello_world();
   let binary = ir.compile();
   let listener = common::run(binary);
   let mut stream = listener.incoming().next().unwrap().unwrap();
