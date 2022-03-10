@@ -35,7 +35,7 @@ pub struct CallIndirect {
   type_idx:     u32,
   table_idx:    u32,
   parameters:   Vec<Box<dyn Instruction>>,
-  function_idx: Box<dyn Instruction>,
+  function_idx: Option<Box<dyn Instruction>>,
 }
 
 impl CallIndirect {
@@ -45,7 +45,25 @@ impl CallIndirect {
     parameters:   Vec<Box<dyn Instruction>>,
     function_idx: Box<dyn Instruction>,
   ) -> Box<Self> {
-    Box::new(Self{ type_idx, table_idx, parameters, function_idx })
+    Box::new(Self{
+      type_idx,
+      table_idx,
+      parameters,
+      function_idx: Some(function_idx),
+    })
+  }
+
+  pub fn stacked(
+    type_idx:     u32,
+    table_idx:    u32,
+    parameters:   Vec<Box<dyn Instruction>>,
+  ) -> Box<Self> {
+    Box::new(Self{
+      type_idx,
+      table_idx,
+      parameters,
+      function_idx: None,
+    })
   }
 }
 
@@ -54,7 +72,9 @@ impl Compilable for CallIndirect {
     for parameter in self.parameters.iter() {
       parameter.compile(buf);
     }
-    self.function_idx.compile(buf);
+    if let Some(function_idx) = &self.function_idx {
+      function_idx.compile(buf);
+    }
     buf.push(0x11);
     buf.extend(&from_u32(self.type_idx));
     buf.extend(&from_u32(self.table_idx));
