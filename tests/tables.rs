@@ -2,6 +2,8 @@ use wasm_ir::{
   Body,
   Data,
   DataMode,
+  ElementMode,
+  Export,
   FunctionType,
   I32,
   Import,
@@ -21,6 +23,10 @@ mod common;
 fn tables() {
   let mut imported = Module::new();
   imported.set_memory(Limit::new(1, Some(1)));
+  imported.export_table(
+    Limit::new(1, Some(1)),
+    Export::new("table".to_string()),
+  );
   let test_address = 420;
   let test_str = "test ok\n".to_string().into_bytes();
   imported.add_data(Data::new(
@@ -30,20 +36,26 @@ fn tables() {
     ),
   ));
   let imported_type = || FunctionType::new(vec![], vec![I32, I32]);
-  imported.add_exported_function(
+  imported.add_function_element(
     imported_type(),
     Body::new(Vec::new(), vec![
       I32Const::new(test_address),
       I32Const::new(test_str.len() as u32),
     ]),
-    "get_test".to_string(),
+    ElementMode::Active{
+      table_idx: 0, offset: I32Const::new(0),
+    },
   );
 
   let mut main = Module::new();
-  main.set_memory(Limit::new(1, Some(1)));
-  let table_idx = main.import_table(Limit::new(1, Some(1)), Import::new(
-    "test".to_string(), "table".to_string(),
-  ));
+  main.import_memory(
+    Import::new("env".to_string(), "memory".to_string()),
+    Limit::new(1, Some(1)),
+  );
+  let table_idx = main.export_table(
+    Limit::new(1, Some(1)),
+    Export::new("table".to_string()),
+  );
   let fd_write_type = FunctionType::new(
     vec![I32, I32, I32, I32],
     vec![I32],
@@ -74,10 +86,15 @@ fn tables() {
         I32Const::new(8),  // nwritten
       ]),
       DropStack::new(),
+      DropStack::new(),
     ],
   ), "_start".to_string());
 
   let mut embedder = common::Embedder::new();
-  embedder.instantiate(imported.compile());
+  let imported_instance = embedder.instantiate(imported.compile());
+  embedder.define_from_instance(imported_instance, "table");
+  embedder.define_from_instance(imported_instance, "memory");
+  use std::path::Path;
+  main.write(Path::new("gen.wasm")).unwrap();
   embedder.run(main.compile());
 }

@@ -6,6 +6,7 @@ use wasm_ir::code::numeric::I32Const;
 use wasm_ir::code::memory::I32Store;
 use wasm_ir::code::parametric::DropStack;
 
+#[allow(dead_code)] // not used every function is used in this test...
 mod common;
 
 fn generate_hello_world() -> Module {

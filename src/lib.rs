@@ -6,6 +6,9 @@ pub use code::{Body, Instruction, Local};
 mod data;
 pub use data::{Data, DataMode};
 
+mod element;
+pub use element::{Element, ElementMode};
+
 mod exports;
 pub use exports::{Export, ExportDescription};
 

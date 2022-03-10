@@ -1,7 +1,7 @@
 // This code is free software distributed under GPLv3 by Blue Forest.
 
-use crate::Compilable;
-use crate::tables;
+use crate::{Compilable, Limit};
+use crate::tables::Table;
 use crate::values::from_u32;
 
 pub struct Import {
@@ -29,7 +29,7 @@ impl Compilable for Import {
 
 pub enum ImportDescription {
   Func(u32),
-  Table(tables::Table),
-  // Mem(),
+  Table(Table),
+  Mem(Limit),
   // Global(),
 }

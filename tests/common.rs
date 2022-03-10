@@ -30,6 +30,11 @@ impl Embedder {
     let store = Store::new(&engine, wasi_ctx);
     Embedder{ listener, engine, linker, store }
   }
+
+  pub fn define_from_instance(&mut self, instance: Instance, name: &str) {
+    let exported = instance.get_export(&mut self.store, name).unwrap();
+    self.linker.define("env", name, exported).unwrap();
+  }
   
   pub fn instantiate(&mut self, binary: Vec<u8>) -> Instance {
     let module = Module::new(&self.engine, binary).unwrap();
