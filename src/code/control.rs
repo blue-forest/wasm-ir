@@ -17,6 +17,10 @@ impl Call {
   ) -> Box<Self> {
     Box::new(Self{ function_idx, parameters })
   }
+
+  pub fn new_stacked(function_idx: u32) -> Box<Self> {
+    Box::new(Self{ function_idx, parameters: Vec::new() })
+  }
 }
 
 impl Compilable for Call {
@@ -53,15 +57,14 @@ impl CallIndirect {
     })
   }
 
-  pub fn stacked(
+  pub fn new_stacked(
     type_idx:     u32,
     table_idx:    u32,
-    parameters:   Vec<Box<dyn Instruction>>,
   ) -> Box<Self> {
     Box::new(Self{
       type_idx,
       table_idx,
-      parameters,
+      parameters: Vec::new(),
       function_idx: None,
     })
   }

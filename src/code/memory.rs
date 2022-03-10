@@ -27,7 +27,7 @@ impl I32Store {
     })
   }
 
-  pub fn stacked(align: u32, offset: u32) -> Box<Self> {
+  pub fn new_stacked(align: u32, offset: u32) -> Box<Self> {
     Box::new(Self{
       align,
       offset,
