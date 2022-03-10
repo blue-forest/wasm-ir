@@ -6,32 +6,41 @@ use wasm_ir::{
   I32,
   Import,
   Limit,
+  Local,
   Module,
 };
 use wasm_ir::code::control::{Call, CallIndirect};
-use wasm_ir::code::parametric::DropStack;
 use wasm_ir::code::numeric::I32Const;
 use wasm_ir::code::memory::I32Store;
+use wasm_ir::code::parametric::DropStack;
+use wasm_ir::code::variable::{LocalGet, LocalSet};
+
+mod common;
 
 #[test]
 fn tables() {
   let mut imported = Module::new();
   imported.set_memory(Limit::new(1, Some(1)));
+  let test_address = 420;
+  let test_str = "test ok\n".to_string().into_bytes();
   imported.add_data(Data::new(
-    "test ok\n".to_string().into_bytes(),
+    test_str.clone(),
     DataMode::Active(
-      I32Const::new(420),
+      I32Const::new(test_address),
     ),
   ));
+  let imported_type = || FunctionType::new(vec![], vec![I32, I32]);
   imported.add_exported_function(
-    FunctionType::new(vec![], vec![I32]),
-    Body::new(vec![
-      I32Const::new(420),
+    imported_type(),
+    Body::new(Vec::new(), vec![
+      I32Const::new(test_address),
+      I32Const::new(test_str.len() as u32),
     ]),
     "get_test".to_string(),
   );
 
   let mut main = Module::new();
+  main.set_memory(Limit::new(1, Some(1)));
   let table_idx = main.import_table(Limit::new(1, Some(1)), Import::new(
     "test".to_string(), "table".to_string(),
   ));
@@ -43,20 +52,32 @@ fn tables() {
     "wasi_unstable".to_string(), "fd_write".to_string()
   ));
 
-  let imported_type = main.add_function_type(
-    FunctionType::new(vec![I32], vec![]),
-  );
-  main.add_exported_function(FunctionType::new(vec![], vec![]), Body::new(vec![
-    I32Store::new(2, 0,
-      I32Const::new(0), // address
+  let imported_type_idx = main.add_function_type(imported_type());
+  main.add_exported_function(FunctionType::new(vec![], vec![]), Body::new(
+    vec![
+      Local::new(1, I32),
+    ],
+    vec![
+      I32Const::new(0), // iovs base address
       CallIndirect::new(
-        imported_type, table_idx, vec![I32Const::new(1)], I32Const::new(0),
-      ), // get_test() -> iovs.base
-    ),
-    Call::new(fd_write_idx, vec![
-      I32Const::new(1),  // file_descriptor - 1 for stdout
-      I32Const::new(0),  // nwritten
-    ]),
-    DropStack::new(),
-  ]), "_start".to_string());
+        imported_type_idx, table_idx, vec![I32Const::new(1)], I32Const::new(0),
+      ), // get_test() -> iovs.base, iovs.length
+      LocalSet::new(0), // set iovs.length
+      I32Store::new_stacked(2, 0), // store iovs.base
+      I32Const::new(4), // iovs length address
+      LocalGet::new(0), // get iovs.length
+      I32Store::new_stacked(2, 0), // store iovs.length
+      Call::new(fd_write_idx, vec![
+        I32Const::new(1),  // file_descriptor - 1 for stdout
+        I32Const::new(0),  // iovs address
+        I32Const::new(1),  // iovs len
+        I32Const::new(8),  // nwritten
+      ]),
+      DropStack::new(),
+    ],
+  ), "_start".to_string());
+
+  let mut embedder = common::Embedder::new();
+  embedder.instantiate(imported.compile());
+  embedder.run(main.compile());
 }

@@ -27,7 +27,7 @@ fn generate_hello_world() -> Module {
   ));
 
   let start_type = FunctionType::new(vec![], vec![]);
-  let start_body = Body::new(vec![
+  let start_body = Body::new(Vec::new(), vec![
     I32Store::new(2, 0,
       I32Const::new(0),
       I32Const::new(8),
@@ -55,8 +55,9 @@ fn generate_hello_world() -> Module {
 fn hello_world() {
   let ir = generate_hello_world();
   let binary = ir.compile();
-  let listener = common::run(binary);
-  let mut stream = listener.incoming().next().unwrap().unwrap();
+  let mut embedder = common::Embedder::new();
+  embedder.run(binary);
+  let mut stream = embedder.listener.incoming().next().unwrap().unwrap();
   let mut buf: [u8; 12] = [0; 12];
   stream.read(&mut buf).unwrap();
   assert_eq!(std::str::from_utf8(&buf).unwrap(), "hello world\n");

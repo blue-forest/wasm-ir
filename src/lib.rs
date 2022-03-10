@@ -1,7 +1,7 @@
 // This code is free software distributed under GPLv3 by Blue Forest.
 
 pub mod code;
-pub use code::{Body, Instruction};
+pub use code::{Body, Instruction, Local};
 
 mod data;
 pub use data::{Data, DataMode};
