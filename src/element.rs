@@ -1,9 +1,10 @@
 use crate::{Compilable, Instruction};
+use crate::code::reference::RefInstruction;
 use crate::values::from_u32;
 
 pub struct Element {
   type_:     u8,
-  init_expr: Vec<Box<dyn Instruction>>,
+  init_expr: Vec<Box<dyn RefInstruction>>,
   init_func: Vec<u32>,
   mode:      ElementMode,
 }
@@ -11,7 +12,7 @@ pub struct Element {
 impl Element {
   pub fn with_expr(
     type_: u8,
-    init:  Vec<Box<dyn Instruction>>,
+    init:  Vec<Box<dyn RefInstruction>>,
     mode:  ElementMode,
   ) -> Self {
     Self{
@@ -31,30 +32,55 @@ impl Element {
 
 impl Compilable for Element {
   fn compile(&self, buf: &mut Vec<u8>) {
-    let expr_bit = if self.init_expr.is_empty() { 0x00 } else { 0x04 };
+    /*
+    let (expr_bit, init) = if self.init_expr.is_empty() {
+      (0x00, self.init_expr.iter() as &dyn Iter)
+    } else {
+      (0x04, self.init_func.iter())
+    };
     if self.type_ != 0 {
       todo!()
     }
+    */
     match &self.mode {
       ElementMode::Passive => {
-        buf.push(expr_bit + 0x01);
+        let mut byte = 0x01;
+        if self.init_expr.is_empty() {
+          byte += 0x04;
+        }
+        buf.push(byte);
         todo!()
       }
       ElementMode::Active{ table_idx, offset } => {
         if *table_idx != 0 {
           todo!()
         }
-        buf.push(expr_bit + 0x00);
-        offset.compile(buf);
-        buf.push(0x0b);
-        buf.extend(&from_u32(self.init_func.len() as u32));
-        for function_idx in self.init_func.iter() {
-          buf.extend(&from_u32(*function_idx));
+        if self.init_expr.is_empty() {
+          buf.push(0x00);
+          offset.compile(buf);
+          buf.push(0x0b);
+          buf.extend(&from_u32(self.init_func.len() as u32));
+          for function_idx in self.init_func.iter() {
+            buf.extend(&from_u32(*function_idx));
+          }
+        } else {
+          buf.push(0x04);
+          offset.compile(buf);
+          buf.push(0x0b);
+          buf.push(0x01);
+          // buf.extend(&from_u32((self.init_expr.len()) as u32));
+          for instruction in self.init_expr.iter() {
+            instruction.compile(buf);
+          }
+          buf.push(0x0b);
         }
-        // buf.push(0x0b);
       }
       ElementMode::Declarative => {
-        buf.push(expr_bit + 0x03);
+        let mut byte = 0x03;
+        if self.init_expr.is_empty() {
+          byte += 0x04;
+        }
+        buf.push(byte);
         todo!()
       }
     };

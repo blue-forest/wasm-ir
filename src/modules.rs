@@ -17,10 +17,10 @@ use crate::{
   FUNC_REF,
   Import,
   ImportDescription,
-  Instruction,
   Limit,
   Table,
 };
+use crate::code::reference::RefInstruction;
 use crate::values::from_u32;
 
 pub struct Module {
@@ -118,7 +118,7 @@ impl Module {
 
   pub fn add_expression_element(
     &mut self,
-    expr:         Vec<Box<dyn Instruction>>,
+    expr:         Vec<Box<dyn RefInstruction>>,
     element_mode: ElementMode,
   ) -> u32 {
     let element_idx = self.sec_elem.len() as u32;

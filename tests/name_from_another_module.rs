@@ -9,7 +9,6 @@ use wasm_ir::{
   FunctionType,
   I32,
   Import,
-  Instruction,
   Limit,
   Local,
   Module,
@@ -18,13 +17,13 @@ use wasm_ir::code::control::{Call, CallIndirect};
 use wasm_ir::code::numeric::I32Const;
 use wasm_ir::code::memory::I32Store;
 use wasm_ir::code::parametric::DropStack;
+use wasm_ir::code::reference::RefFunc;
 use wasm_ir::code::variable::{LocalGet, LocalSet};
 
 mod common;
 
 fn name_from_another_module(
   is_expr: bool,
-  table_0: bool,
   mode: ElementMode,
   port: &str,
 ) {
@@ -43,21 +42,24 @@ fn name_from_another_module(
     ),
   ));
   let imported_type = || FunctionType::new(vec![], vec![I32, I32]);
-  let expr: Vec<Box<dyn Instruction>> = vec![
+  let imported_body = Body::new(Vec::new(), vec![
     I32Const::new(test_address),
     I32Const::new(test_str.len() as u32),
-  ];
+  ]);
   if is_expr {
-    imported.add_expression_element(expr, mode);
+    let (_, function_idx) = imported.add_function(imported_type(), imported_body);
+    imported.add_expression_element(vec![
+      RefFunc::new(function_idx),
+    ], mode);
   } else {
     imported.add_function_element(
-      imported_type(),
-      Body::new(Vec::new(), expr),
-      mode,
+      imported_type(), imported_body, mode,
     );
   }
-  // use std::path::Path;
-  // imported.write(Path::new("imported.wasm")).unwrap();
+  use std::path::Path;
+  if port == "8424" {
+    imported.write(Path::new("imported.wasm")).unwrap();
+  }
 
   let mut main = Module::new();
   main.import_memory(
@@ -101,12 +103,17 @@ fn name_from_another_module(
       DropStack::new(),
     ],
   ), "_start".to_string());
-  // main.write(Path::new("main.wasm")).unwrap();
+  if port == "8424" {
+    main.write(Path::new("main.wasm")).unwrap();
+  }
 
   let mut embedder = common::Embedder::new(port);
   let imported_instance = embedder.instantiate(imported.compile());
   embedder.define_from_instance(imported_instance, "table");
   embedder.define_from_instance(imported_instance, "memory");
+  if port == "8424" {
+    println!("imported ok");
+  }
   embedder.run(main.compile());
   let mut stream = embedder.listener.incoming().next().unwrap().unwrap();
   let mut buf: [u8; 8] = [0; 8];
@@ -116,38 +123,38 @@ fn name_from_another_module(
 
 #[test]
 fn elem00() {
-  name_from_another_module(false, true, ElementMode::Active{
+  name_from_another_module(false, ElementMode::Active{
     table_idx: 0, offset: I32Const::new(0),
   }, "8420");
 }
 
 #[test]
 fn elem01() {
-  name_from_another_module(false, true, ElementMode::Passive, "8421");
+  name_from_another_module(false, ElementMode::Passive, "8421");
 }
 
 #[test]
 fn elem02() {
-  name_from_another_module(false, true, ElementMode::Active{
+  name_from_another_module(false, ElementMode::Active{
     table_idx: 1, offset: I32Const::new(0),
   }, "8422");
 }
 
 #[test]
 fn elem04() {
-  name_from_another_module(true, true, ElementMode::Active{
+  name_from_another_module(true, ElementMode::Active{
     table_idx: 0, offset: I32Const::new(0),
   }, "8424");
 }
 
 #[test]
 fn elem05() {
-  name_from_another_module(true, true, ElementMode::Passive, "8425");
+  name_from_another_module(true, ElementMode::Passive, "8425");
 }
 
 #[test]
 fn elem06() {
-  name_from_another_module(true, true, ElementMode::Active{
+  name_from_another_module(true, ElementMode::Active{
     table_idx: 1, offset: I32Const::new(0),
   }, "8426");
 }
