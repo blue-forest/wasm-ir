@@ -48,7 +48,7 @@ fn tables() {
       table_idx: 0, offset: I32Const::new(0),
     },
   );
-  use std::path::Path;
+  // use std::path::Path;
   // imported.write(Path::new("imported.wasm")).unwrap();
 
   let mut main = Module::new();
