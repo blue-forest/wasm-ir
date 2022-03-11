@@ -9,6 +9,7 @@ use wasm_ir::{
   FunctionType,
   I32,
   Import,
+  Instruction,
   Limit,
   Local,
   Module,
@@ -21,8 +22,12 @@ use wasm_ir::code::variable::{LocalGet, LocalSet};
 
 mod common;
 
-#[test]
-fn tables() {
+fn name_from_another_module(
+  is_expr: bool,
+  table_0: bool,
+  mode: ElementMode,
+  port: &str,
+) {
   let mut imported = Module::new();
   imported.set_memory(Limit::new(1, Some(1)));
   imported.export_table(
@@ -38,16 +43,19 @@ fn tables() {
     ),
   ));
   let imported_type = || FunctionType::new(vec![], vec![I32, I32]);
-  imported.add_function_element(
-    imported_type(),
-    Body::new(Vec::new(), vec![
-      I32Const::new(test_address),
-      I32Const::new(test_str.len() as u32),
-    ]),
-    ElementMode::Active{
-      table_idx: 0, offset: I32Const::new(0),
-    },
-  );
+  let expr: Vec<Box<dyn Instruction>> = vec![
+    I32Const::new(test_address),
+    I32Const::new(test_str.len() as u32),
+  ];
+  if is_expr {
+    imported.add_expression_element(expr, mode);
+  } else {
+    imported.add_function_element(
+      imported_type(),
+      Body::new(Vec::new(), expr),
+      mode,
+    );
+  }
   // use std::path::Path;
   // imported.write(Path::new("imported.wasm")).unwrap();
 
@@ -95,7 +103,7 @@ fn tables() {
   ), "_start".to_string());
   // main.write(Path::new("main.wasm")).unwrap();
 
-  let mut embedder = common::Embedder::new();
+  let mut embedder = common::Embedder::new(port);
   let imported_instance = embedder.instantiate(imported.compile());
   embedder.define_from_instance(imported_instance, "table");
   embedder.define_from_instance(imported_instance, "memory");
@@ -105,3 +113,42 @@ fn tables() {
   stream.read(&mut buf).unwrap();
   assert_eq!(std::str::from_utf8(&buf).unwrap(), "test ok\n");
 }
+
+#[test]
+fn elem00() {
+  name_from_another_module(false, true, ElementMode::Active{
+    table_idx: 0, offset: I32Const::new(0),
+  }, "8420");
+}
+
+#[test]
+fn elem01() {
+  name_from_another_module(false, true, ElementMode::Passive, "8421");
+}
+
+#[test]
+fn elem02() {
+  name_from_another_module(false, true, ElementMode::Active{
+    table_idx: 1, offset: I32Const::new(0),
+  }, "8422");
+}
+
+#[test]
+fn elem04() {
+  name_from_another_module(true, true, ElementMode::Active{
+    table_idx: 0, offset: I32Const::new(0),
+  }, "8424");
+}
+
+#[test]
+fn elem05() {
+  name_from_another_module(true, true, ElementMode::Passive, "8425");
+}
+
+#[test]
+fn elem06() {
+  name_from_another_module(true, true, ElementMode::Active{
+    table_idx: 1, offset: I32Const::new(0),
+  }, "8426");
+}
+

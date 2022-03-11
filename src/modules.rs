@@ -17,6 +17,7 @@ use crate::{
   FUNC_REF,
   Import,
   ImportDescription,
+  Instruction,
   Limit,
   Table,
 };
@@ -113,6 +114,18 @@ impl Module {
     let function_idx = self.func_count;
     self.func_count += 1;
     function_idx
+  }
+
+  pub fn add_expression_element(
+    &mut self,
+    expr:         Vec<Box<dyn Instruction>>,
+    element_mode: ElementMode,
+  ) -> u32 {
+    let element_idx = self.sec_elem.len() as u32;
+    self.sec_elem.push(Box::new(Element::with_expr(
+      FUNC_REF, expr, element_mode,
+    )));
+    element_idx
   }
 
   pub fn add_function_element(

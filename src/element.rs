@@ -40,7 +40,10 @@ impl Compilable for Element {
         buf.push(expr_bit + 0x01);
         todo!()
       }
-      ElementMode::Active{ table_idx: _table_idx, offset } => {
+      ElementMode::Active{ table_idx, offset } => {
+        if *table_idx != 0 {
+          todo!()
+        }
         buf.push(expr_bit + 0x00);
         offset.compile(buf);
         buf.push(0x0b);

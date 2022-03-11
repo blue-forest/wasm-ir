@@ -1145,7 +1145,6 @@ dependencies = [
 
 [[package]]
 name = "wasm-ir"
-<<<<<<< Updated upstream
 version = "0.1.6"
 dependencies = [
  "cap-std",
@@ -1495,4 +1494,3 @@ dependencies = [
  "cc",
  "libc",
 ]
-version = "0.1.5"
