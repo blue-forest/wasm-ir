@@ -45,30 +45,35 @@ impl Compilable for Element {
     match &self.mode {
       ElementMode::Passive => {
         let mut byte = 0x01;
-        if self.init_expr.is_empty() {
+        if !self.init_expr.is_empty() {
           byte += 0x04;
         }
         buf.push(byte);
         todo!()
       }
       ElementMode::Active{ table_idx, offset } => {
+        let mut byte = 0x00;
+        if !self.init_expr.is_empty() {
+          byte += 0x04;
+        }
         if *table_idx != 0 {
-          todo!()
+          buf.push(byte + 0x02);
+          buf.extend(&from_u32(*table_idx));
+        } else {
+          buf.push(byte);
+        }
+        offset.compile(buf);
+        buf.push(0x0b);
+        if *table_idx != 0 {
+          buf.push(self.type_);
         }
         if self.init_expr.is_empty() {
-          buf.push(0x00);
-          offset.compile(buf);
-          buf.push(0x0b);
           buf.extend(&from_u32(self.init_func.len() as u32));
           for function_idx in self.init_func.iter() {
             buf.extend(&from_u32(*function_idx));
           }
         } else {
-          buf.push(0x04);
-          offset.compile(buf);
-          buf.push(0x0b);
           buf.push(0x01);
-          // buf.extend(&from_u32((self.init_expr.len()) as u32));
           for instruction in self.init_expr.iter() {
             instruction.compile(buf);
           }
@@ -77,7 +82,7 @@ impl Compilable for Element {
       }
       ElementMode::Declarative => {
         let mut byte = 0x03;
-        if self.init_expr.is_empty() {
+        if !self.init_expr.is_empty() {
           byte += 0x04;
         }
         buf.push(byte);

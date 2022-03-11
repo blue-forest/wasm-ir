@@ -29,6 +29,14 @@ fn name_from_another_module(
 ) {
   let mut imported = Module::new();
   imported.set_memory(Limit::new(1, Some(1)));
+  if let ElementMode::Active{ table_idx, offset: _ } = mode {
+    if table_idx == 1 {
+      imported.export_table(
+        Limit::new(1, Some(1)),
+        Export::new("wrong_table".to_string()),
+      );
+    }
+  }
   imported.export_table(
     Limit::new(1, Some(1)),
     Export::new("table".to_string()),
@@ -57,7 +65,7 @@ fn name_from_another_module(
     );
   }
   use std::path::Path;
-  if port == "8424" {
+  if port == "8422" {
     imported.write(Path::new("imported.wasm")).unwrap();
   }
 
@@ -103,7 +111,7 @@ fn name_from_another_module(
       DropStack::new(),
     ],
   ), "_start".to_string());
-  if port == "8424" {
+  if port == "8422" {
     main.write(Path::new("main.wasm")).unwrap();
   }
 
@@ -111,7 +119,7 @@ fn name_from_another_module(
   let imported_instance = embedder.instantiate(imported.compile());
   embedder.define_from_instance(imported_instance, "table");
   embedder.define_from_instance(imported_instance, "memory");
-  if port == "8424" {
+  if port == "8422" {
     println!("imported ok");
   }
   embedder.run(main.compile());
