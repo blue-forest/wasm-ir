@@ -8,6 +8,8 @@ use crate::{
   Body,
   Compilable,
   Data,
+  Element,
+  ElementMode,
   Export,
   ExportDescription,
   Function,
@@ -29,12 +31,13 @@ pub struct Module {
   // sec_global:  Vec<Box<dyn Compilable>>,
   sec_export:  Vec<Box<dyn Compilable>>,
   // sec_start:   Vec<Box<dyn Compilable>>,
-  // sec_elem:    Vec<Box<dyn Compilable>>,
+  sec_elem:    Vec<Box<dyn Compilable>>,
   // data_count:  Vec<Box<dyn Compilable>>,
   sec_code:    Vec<Box<dyn Compilable>>,
   sec_data:    Vec<Box<dyn Compilable>>,
   // sec_custom:  Vec<Box<dyn Compilable>>,
   table_count: u32,
+  func_count:  u32,
 }
 
 impl Module {
@@ -48,13 +51,25 @@ impl Module {
       // sec_global:  Vec::new(),
       sec_export:  Vec::new(),
       // sec_start:   Vec::new(),
-      // sec_elem:    Vec::new(),
+      sec_elem:    Vec::new(),
       // data_count:  Vec::new(),
       sec_code:    Vec::new(),
       sec_data:    Vec::new(),
       // sec_custom:  Vec::new(),
       table_count: 0,
+      func_count:  0,
     }
+  }
+
+  pub fn export_table(&mut self, limit: Limit, export: Export) -> u32 {
+    let table_idx = self.table_count;
+    self.sec_table.push(Box::new(Table::new(FUNC_REF, limit)));
+    self.sec_export.push(Box::new(ModuleExport{
+      export,
+      description: ExportDescription::Table(table_idx),
+    }));
+    self.table_count += 1;
+    table_idx
   }
 
   pub fn import_table(&mut self, limit: Limit, import: Import) -> u32 {
@@ -71,14 +86,16 @@ impl Module {
     &mut self,
     profile: FunctionType,
     import:  Import,
-  ) -> u32 {
+  ) -> (u32, u32) {
     let type_idx = self.sec_type.len() as u32;
     self.sec_type.push(Box::new(profile));
     self.sec_import.push(Box::new(ModuleImport{
       import,
       description: ImportDescription::Func(type_idx),
     }));
-    type_idx
+    let function_idx = self.func_count;
+    self.func_count += 1;
+    (type_idx, function_idx)
   }
 
   pub fn add_function_type(
@@ -91,10 +108,26 @@ impl Module {
   }
 
   pub fn set_function_body(&mut self, type_idx: u32, body: Body) -> u32 {
-    let function_idx = self.sec_func.len() as u32;
     self.sec_func.push(Box::new(Function::new(type_idx)));
     self.sec_code.push(Box::new(body));
+    let function_idx = self.func_count;
+    self.func_count += 1;
     function_idx
+  }
+
+  pub fn add_function_element(
+    &mut self,
+    profile:      FunctionType,
+    body:         Body,
+    element_mode: ElementMode,
+  ) -> (u32, u32, u32) {
+    let (type_idx, function_idx) = self.add_function(profile, body);
+    let element_idx = self.sec_elem.len() as u32;
+    self.sec_elem.push(Box::new(Element::with_func(
+      vec![function_idx],
+      element_mode,
+    )));
+    (type_idx, function_idx, element_idx)
   }
 
   pub fn add_function(
@@ -125,6 +158,18 @@ impl Module {
     self.sec_data.push(Box::new(data));
   }
 
+  pub fn import_memory(&mut self, import: Import, limit: Limit) {
+    let mem_idx = self.sec_mem.len() as u32;
+    self.sec_import.push(Box::new(ModuleImport{
+      import,
+      description: ImportDescription::Mem(limit),
+    }));
+    self.sec_export.push(Box::new(ModuleExport{
+      export:      Export::new("memory".to_string()),
+      description: ExportDescription::Mem(mem_idx),
+    }));
+  }
+
   pub fn set_memory(&mut self, limit: Limit) {
     let mem_idx = self.sec_mem.len() as u32;
     self.sec_mem.push(Box::new(limit));
@@ -145,6 +190,7 @@ impl Module {
     compile_section(&mut result, &self.sec_table,  0x04);
     compile_section(&mut result, &self.sec_mem,    0x05);
     compile_section(&mut result, &self.sec_export, 0x07);
+    compile_section(&mut result, &self.sec_elem,   0x09);
     compile_section(&mut result, &self.sec_code,   0x0a);
     compile_section(&mut result, &self.sec_data,   0x0b);
     result
@@ -174,6 +220,10 @@ impl Compilable for ModuleImport {
         buf.push(0x01);
         table.compile(buf);
       }
+      ImportDescription::Mem(limit) => {
+        buf.push(0x02);
+        limit.compile(buf);
+      }
     }
   }
 }
@@ -190,6 +240,10 @@ impl Compilable for ModuleExport {
       ExportDescription::Func(type_idx) => {
         buf.push(0x00);
         buf.extend(&from_u32(type_idx));
+      }
+      ExportDescription::Table(table_idx) => {
+        buf.push(0x01);
+        buf.extend(&from_u32(table_idx));
       }
       ExportDescription::Mem(mem_idx) => {
         buf.push(0x02);

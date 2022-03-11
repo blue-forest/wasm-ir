@@ -1,9 +1,14 @@
 [package]
 name = "wasm-ir"
-version = "0.1.5"
+version = "0.1.6"
 authors = ["Nazim Lachter <nazim@blueforest.cc>", "Vulcain <vulcain@blueforest.cc>"]
 edition = "2021"
 description = "An Intermediate Representation of WebAssembly"
 repository = "https://github.com/theblueforest/wasm-ir"
 license = "GPL-3.0"
 keywords = ["WebAssembly"]
+
+[dev-dependencies]
+cap-std = "0.24.1"
+wasmtime = "0.34.1"
+wasmtime-wasi = "0.34.1"

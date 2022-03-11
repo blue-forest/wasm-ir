@@ -36,13 +36,13 @@ If you want to join the development and contribute to the project, please reach 
 - [ ] u64
 - [ ] s32
 - [ ] s64
-- [ ] f32
-- [ ] f64
-- [ ] v128
+- [x] f32
+- [x] f64
+- [x] v128
 - [ ] name
-- [ ] reference
-  - [ ] function
-  - [ ] extern
+- [x] reference
+  - [x] function
+  - [x] extern
 - [x] limit
 - [x] function
 
@@ -76,8 +76,8 @@ If you want to join the development and contribute to the project, please reach 
 
 #### Variable
 
-- [ ] local.get
-- [ ] local.set
+- [x] local.get
+- [x] local.set
 - [ ] local.tee
 - [ ] global.get
 - [ ] global.set
@@ -510,16 +510,15 @@ If you want to join the development and contribute to the project, please reach 
 - [ ] Import
   - [x] Func
   - [x] Table
-  - [ ] Mem
+  - [x] Mem
   - [ ] Global
-- [ ] Function
-  - [ ] locals
+- [x] Function
 - [x] Table
 - [x] Memory
 - [ ] Global
 - [ ] Export
   - [x] Func
-  - [ ] Table
+  - [x] Table
   - [x] Mem
   - [ ] Global
 - [ ] Start

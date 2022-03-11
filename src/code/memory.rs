@@ -52,4 +52,3 @@ impl Compilable for I32Store {
 }
 
 impl Instruction for I32Store {}
-
