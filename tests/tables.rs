@@ -1,3 +1,5 @@
+use std::io::Read;
+
 use wasm_ir::{
   Body,
   Data,
@@ -46,15 +48,17 @@ fn tables() {
       table_idx: 0, offset: I32Const::new(0),
     },
   );
+  use std::path::Path;
+  // imported.write(Path::new("imported.wasm")).unwrap();
 
   let mut main = Module::new();
   main.import_memory(
     Import::new("env".to_string(), "memory".to_string()),
     Limit::new(1, Some(1)),
   );
-  let table_idx = main.export_table(
+  let table_idx = main.import_table(
     Limit::new(1, Some(1)),
-    Export::new("table".to_string()),
+    Import::new("env".to_string(), "table".to_string()),
   );
   let fd_write_type = FunctionType::new(
     vec![I32, I32, I32, I32],
@@ -65,6 +69,7 @@ fn tables() {
   ));
 
   let imported_type_idx = main.add_function_type(imported_type());
+  println!("{}", table_idx);
   main.add_exported_function(FunctionType::new(vec![], vec![]), Body::new(
     vec![
       Local::new(1, I32),
@@ -72,7 +77,7 @@ fn tables() {
     vec![
       I32Const::new(0), // iovs base address
       CallIndirect::new(
-        imported_type_idx, table_idx, vec![I32Const::new(1)], I32Const::new(0),
+        imported_type_idx, table_idx, vec![], I32Const::new(0),
       ), // get_test() -> iovs.base, iovs.length
       LocalSet::new(0), // set iovs.length
       I32Store::new_stacked(2, 0), // store iovs.base
@@ -86,15 +91,17 @@ fn tables() {
         I32Const::new(8),  // nwritten
       ]),
       DropStack::new(),
-      DropStack::new(),
     ],
   ), "_start".to_string());
+  // main.write(Path::new("main.wasm")).unwrap();
 
   let mut embedder = common::Embedder::new();
   let imported_instance = embedder.instantiate(imported.compile());
   embedder.define_from_instance(imported_instance, "table");
   embedder.define_from_instance(imported_instance, "memory");
-  use std::path::Path;
-  main.write(Path::new("gen.wasm")).unwrap();
   embedder.run(main.compile());
+  let mut stream = embedder.listener.incoming().next().unwrap().unwrap();
+  let mut buf: [u8; 8] = [0; 8];
+  stream.read(&mut buf).unwrap();
+  assert_eq!(std::str::from_utf8(&buf).unwrap(), "test ok\n");
 }

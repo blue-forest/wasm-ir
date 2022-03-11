@@ -72,11 +72,11 @@ impl CallIndirect {
 
 impl Compilable for CallIndirect {
   fn compile(&self, buf: &mut Vec<u8>) {
-    for parameter in self.parameters.iter() {
-      parameter.compile(buf);
-    }
     if let Some(function_idx) = &self.function_idx {
       function_idx.compile(buf);
+    }
+    for parameter in self.parameters.iter() {
+      parameter.compile(buf);
     }
     buf.push(0x11);
     buf.extend(&from_u32(self.type_idx));
