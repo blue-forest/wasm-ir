@@ -9,7 +9,7 @@ pub struct RefFunc {
 }
 
 impl RefFunc {
-  pub fn new(function_idx: u32) -> Box<Self> {
+  pub fn new(function_idx: u32) -> Box<dyn RefInstruction> {
     Box::new(Self{ function_idx })
   }
 }
@@ -28,7 +28,7 @@ impl RefInstruction for RefFunc {}
 pub struct RefIsNull{}
 
 impl RefIsNull {
-  pub fn new() -> Box<Self> {
+  pub fn new() -> Box<dyn Instruction> {
     Box::new(Self{})
   }
 }
@@ -46,7 +46,7 @@ pub struct RefNull {
 }
 
 impl RefNull {
-  pub fn new(type_: u8) -> Box<Self> {
+  pub fn new(type_: u8) -> Box<dyn RefInstruction> {
     Box::new(Self{ type_ })
   }
 }

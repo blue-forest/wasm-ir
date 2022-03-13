@@ -14,11 +14,11 @@ impl Call {
   pub fn new(
     function_idx: u32,
     parameters:   Vec<Box<dyn Instruction>>
-  ) -> Box<Self> {
+  ) -> Box<dyn Instruction> {
     Box::new(Self{ function_idx, parameters })
   }
 
-  pub fn new_stacked(function_idx: u32) -> Box<Self> {
+  pub fn new_stacked(function_idx: u32) -> Box<dyn Instruction> {
     Box::new(Self{ function_idx, parameters: Vec::new() })
   }
 }
@@ -48,7 +48,7 @@ impl CallIndirect {
     table_idx:    u32,
     parameters:   Vec<Box<dyn Instruction>>,
     function_idx: Box<dyn Instruction>,
-  ) -> Box<Self> {
+  ) -> Box<dyn Instruction> {
     Box::new(Self{
       type_idx,
       table_idx,
@@ -60,7 +60,7 @@ impl CallIndirect {
   pub fn new_stacked(
     type_idx:     u32,
     table_idx:    u32,
-  ) -> Box<Self> {
+  ) -> Box<dyn Instruction> {
     Box::new(Self{
       type_idx,
       table_idx,

@@ -7,7 +7,7 @@ pub struct LocalSet {
 }
 
 impl LocalSet {
-  pub fn new(local_idx: u32) -> Box<Self> {
+  pub fn new(local_idx: u32) -> Box<dyn Instruction> {
     Box::new(Self{ local_idx })
   }
 }
@@ -26,7 +26,7 @@ pub struct LocalGet {
 }
 
 impl LocalGet {
-  pub fn new(local_idx: u32) -> Box<Self> {
+  pub fn new(local_idx: u32) -> Box<dyn Instruction> {
     Box::new(Self{ local_idx })
   }
 }

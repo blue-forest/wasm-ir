@@ -8,7 +8,7 @@ use super::Instruction;
 pub struct I32Const(u32);
 
 impl I32Const {
-  pub fn new(value: u32) -> Box<Self> {
+  pub fn new(value: u32) -> Box<dyn Instruction> {
     Box::new(Self(value))
   }
 }

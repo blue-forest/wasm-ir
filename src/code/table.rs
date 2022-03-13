@@ -17,7 +17,7 @@ impl TableInit {
     destination: Box<dyn Instruction>,
     offset:      Box<dyn Instruction>,
     size:        Box<dyn Instruction>,
-  ) -> Box<Self> {
+  ) -> Box<dyn Instruction> {
     Box::new(Self{
       element_idx,
       table_idx,
@@ -27,7 +27,7 @@ impl TableInit {
     })
   }
 
-  pub fn new_stacked(element_idx: u32, table_idx: u32) -> Box<Self> {
+  pub fn new_stacked(element_idx: u32, table_idx: u32) -> Box<dyn Instruction> {
     Box::new(Self{
       element_idx,
       table_idx,

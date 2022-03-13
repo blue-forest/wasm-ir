@@ -18,7 +18,7 @@ impl I32Store {
     offset:  u32,
     address: Box<dyn Instruction>,
     value:   Box<dyn Instruction>,
-  ) -> Box<Self> {
+  ) -> Box<dyn Instruction> {
     Box::new(Self{
       align,
       offset,
@@ -27,7 +27,7 @@ impl I32Store {
     })
   }
 
-  pub fn new_stacked(align: u32, offset: u32) -> Box<Self> {
+  pub fn new_stacked(align: u32, offset: u32) -> Box<dyn Instruction> {
     Box::new(Self{
       align,
       offset,

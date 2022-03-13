@@ -7,7 +7,7 @@ use super::Instruction;
 pub struct DropStack{}
 
 impl DropStack {
-  pub fn new() -> Box<Self> {
+  pub fn new() -> Box<dyn Instruction> {
     Box::new(Self{})
   }
 }
