@@ -23,18 +23,18 @@ pub fn module(is_passive: bool) -> Module {
     Limit::new(1, Some(1)),
   );
   let table_idx = result.import_table(
-    Limit::new(1, Some(1)),
     Import::new("env".to_string(), "table".to_string()),
+    Limit::new(1, Some(1)),
   );
   let (_, fd_write_idx) = result.import_function(
+    Import::new("wasi_unstable".to_string(), "fd_write".to_string()),
     FunctionType::new(
       vec![I32, I32, I32, I32],
       vec![I32],
     ),
-    Import::new("wasi_unstable".to_string(), "fd_write".to_string()),
   );
 
-  let imported_type_idx = result.add_function_type(imported::type_());
+  let imported_type_idx = result.add_type(imported::type_());
   let instructions = start_instructions(
     &mut result,
     fd_write_idx,
@@ -42,14 +42,15 @@ pub fn module(is_passive: bool) -> Module {
     table_idx,
     is_passive,
   );
-  result.add_exported_function(
+  result.export_function(
+    "_start".to_string(),
     FunctionType::new(Vec::new(), Vec::new()),
     Body::new(
       vec![
         Local::new(1, I32),
       ],
       instructions,
-    ), "_start".to_string(),
+    ),
   );
   result
 }
@@ -65,8 +66,8 @@ fn start_instructions(
   let mut result: Vec<Box<dyn Instruction>> = Vec::new();
   if is_passive {
     let (_, init_idx) = module.import_function(
-      FunctionType::new(Vec::new(),Vec::new()),
       Import::new("env".to_string(), "init".to_string()),
+      FunctionType::new(Vec::new(),Vec::new()),
     );
      result.push(Call::new(init_idx, Vec::new()));
   }

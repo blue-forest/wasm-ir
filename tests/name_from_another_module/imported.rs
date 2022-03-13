@@ -3,7 +3,6 @@ use wasm_ir::{
   Data,
   DataMode,
   ElementMode,
-  Export,
   FunctionType,
   I32,
   Limit,
@@ -44,7 +43,8 @@ fn get_name(is_expr: bool, module: &mut Module, mode: ElementMode) {
 
 #[inline(always)]
 fn init(module: &mut Module) {
-  module.add_exported_function(
+  module.export_function(
+    "init".to_string(),
     FunctionType::new(Vec::new(), Vec::new()),
     Body::new(Vec::new(), vec![
       TableInit::new(0, 0,
@@ -53,14 +53,13 @@ fn init(module: &mut Module) {
         I32Const::new(1), // region size
       ),
     ]),
-    "init".to_string(),
   );
 }
 
 pub fn module(is_expr: bool, mode: ElementMode) -> Module {
   let is_passive = matches!(mode, ElementMode::Passive);
   let mut result = Module::new().with_name("imported".to_string());
-  result.set_memory(Limit::new(1, Some(1)));
+  result.export_memory(Limit::new(1, Some(1)));
   tables(&mut result, &mode);
   get_name(is_expr, &mut result, mode);
   if is_passive {
@@ -74,14 +73,14 @@ fn tables(module: &mut Module, mode: &ElementMode) {
   if let ElementMode::Active{ table_idx, offset: _ } = mode {
     if *table_idx == 1 {
       module.export_table(
+        "wrong_table".to_string(),
         Limit::new(1, Some(1)),
-        Export::new("wrong_table".to_string()),
       );
     }
   }
   module.export_table(
+    "table".to_string(),
     Limit::new(1, Some(1)),
-    Export::new("table".to_string()),
   );
 }
 
