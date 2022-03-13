@@ -9,6 +9,7 @@ use wasm_ir::{
   FunctionType,
   I32,
   Import,
+  Instruction,
   Limit,
   Local,
   Module,
@@ -18,6 +19,7 @@ use wasm_ir::code::numeric::I32Const;
 use wasm_ir::code::memory::I32Store;
 use wasm_ir::code::parametric::DropStack;
 use wasm_ir::code::reference::RefFunc;
+use wasm_ir::code::table::TableInit;
 use wasm_ir::code::variable::{LocalGet, LocalSet};
 
 mod common;
@@ -27,7 +29,7 @@ fn name_from_another_module(
   mode: ElementMode,
   port: &str,
 ) {
-  let mut imported = Module::new();
+  let mut imported = Module::new().with_name("imported".to_string());
   imported.set_memory(Limit::new(1, Some(1)));
   if let ElementMode::Active{ table_idx, offset: _ } = mode {
     if table_idx == 1 {
@@ -49,13 +51,16 @@ fn name_from_another_module(
       I32Const::new(test_address),
     ),
   ));
-  let imported_type = || FunctionType::new(vec![], vec![I32, I32]);
+  let imported_type = || FunctionType::new(Vec::new(), vec![I32, I32]);
   let imported_body = Body::new(Vec::new(), vec![
     I32Const::new(test_address),
-    I32Const::new(test_str.len() as u32),
+    I32Const::new(test_str.len() as u32)
   ]);
+  let is_passive = if let ElementMode::Passive = mode { true } else { false };
   if is_expr {
-    let (_, function_idx) = imported.add_function(imported_type(), imported_body);
+    let (_, function_idx) = imported.add_function(
+      imported_type(), imported_body,
+    );
     imported.add_expression_element(vec![
       RefFunc::new(function_idx),
     ], mode);
@@ -63,13 +68,26 @@ fn name_from_another_module(
     imported.add_function_element(
       imported_type(), imported_body, mode,
     );
+  };
+  if is_passive {
+    imported.add_exported_function(
+      FunctionType::new(Vec::new(), Vec::new()),
+      Body::new(Vec::new(), vec![
+        TableInit::new(0, 0,
+          I32Const::new(0), // region start
+          I32Const::new(0), // offset
+          I32Const::new(1), // region size
+        ),
+      ]),
+      "init".to_string(),
+    );
   }
-  use std::path::Path;
-  if port == "8422" {
-    imported.write(Path::new("imported.wasm")).unwrap();
-  }
+  // use std::path::Path;
+  // if port == "8421" {
+  //   imported.write_debug(Path::new("imported.wasm")).unwrap();
+  // }
 
-  let mut main = Module::new();
+  let mut main = Module::new().with_name("main".to_string());
   main.import_memory(
     Import::new("env".to_string(), "memory".to_string()),
     Limit::new(1, Some(1)),
@@ -87,42 +105,54 @@ fn name_from_another_module(
   ));
 
   let imported_type_idx = main.add_function_type(imported_type());
-  println!("{}", table_idx);
-  main.add_exported_function(FunctionType::new(vec![], vec![]), Body::new(
-    vec![
-      Local::new(1, I32),
-    ],
-    vec![
-      I32Const::new(0), // iovs base address
-      CallIndirect::new(
-        imported_type_idx, table_idx, vec![], I32Const::new(0),
-      ), // get_test() -> iovs.base, iovs.length
-      LocalSet::new(0), // set iovs.length
-      I32Store::new_stacked(2, 0), // store iovs.base
-      I32Const::new(4), // iovs length address
-      LocalGet::new(0), // get iovs.length
-      I32Store::new_stacked(2, 0), // store iovs.length
-      Call::new(fd_write_idx, vec![
-        I32Const::new(1),  // file_descriptor - 1 for stdout
-        I32Const::new(0),  // iovs address
-        I32Const::new(1),  // iovs len
-        I32Const::new(8),  // nwritten
-      ]),
-      DropStack::new(),
-    ],
-  ), "_start".to_string());
-  if port == "8422" {
-    main.write(Path::new("main.wasm")).unwrap();
+  let mut main_instructions: Vec<Box<dyn Instruction>> = Vec::new();
+  if is_passive {
+    let (_, init_idx) = main.import_function(
+      FunctionType::new(Vec::new(),Vec::new()),
+      Import::new(
+        "env".to_string(), "init".to_string()
+      ),
+    );
+     main_instructions.push(Call::new(init_idx, Vec::new()));
   }
+  main_instructions.push(I32Const::new(0)); // iovs base address
+  main_instructions.push(CallIndirect::new(
+    imported_type_idx, table_idx, Vec::new(), I32Const::new(0),
+  )); // get_test() -> iovs.base, iovs.length
+  main_instructions.push(LocalSet::new(0)); // set iovs.length
+  main_instructions.push(I32Store::new_stacked(2, 0)); // store iovs.base
+  main_instructions.push(I32Const::new(4)); // iovs length address
+  main_instructions.push(LocalGet::new(0)); // get iovs.length
+  main_instructions.push(I32Store::new_stacked(2, 0)); // store iovs.length
+  main_instructions.push(Call::new(fd_write_idx, vec![
+    I32Const::new(1),  // file_descriptor - 1 for stdout
+    I32Const::new(0),  // iovs address
+    I32Const::new(1),  // iovs len
+    I32Const::new(8),  // nwritten
+  ]));
+  main_instructions.push(DropStack::new());
+  main.add_exported_function(
+    FunctionType::new(Vec::new(), Vec::new()),
+    Body::new(
+      vec![
+        Local::new(1, I32),
+      ],
+      main_instructions,
+    ), "_start".to_string(),
+  );
+  // if port == "8421" {
+  //   main.write_debug(Path::new("main.wasm")).unwrap();
+  // }
 
   let mut embedder = common::Embedder::new(port);
-  let imported_instance = embedder.instantiate(imported.compile());
+  let imported_instance = embedder.instantiate(imported.compile_debug());
   embedder.define_from_instance(imported_instance, "table");
   embedder.define_from_instance(imported_instance, "memory");
-  if port == "8422" {
-    println!("imported ok");
+  if is_passive {
+    embedder.define_from_instance(imported_instance, "init");
   }
-  embedder.run(main.compile());
+  // println!("imported ok");
+  embedder.run(main.compile_debug());
   let mut stream = embedder.listener.incoming().next().unwrap().unwrap();
   let mut buf: [u8; 8] = [0; 8];
   stream.read(&mut buf).unwrap();

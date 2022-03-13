@@ -28,34 +28,41 @@ impl Element {
       type_: 0x00, init_expr: Vec::new(), init_func: init, mode,
     }
   }
+
+  fn compile_init(&self, buf: &mut Vec<u8>) {
+    if self.init_expr.is_empty() {
+      buf.extend(&from_u32(self.init_func.len() as u32));
+      for function_idx in self.init_func.iter() {
+        buf.extend(&from_u32(*function_idx));
+      }
+    } else {
+      buf.push(0x01);
+      for instruction in self.init_expr.iter() {
+        instruction.compile(buf);
+      }
+      buf.push(0x0b);
+    }
+  }
+
+  fn leading_byte(&self, mode_byte: u8) -> u8 {
+    if !self.init_expr.is_empty() {
+      mode_byte + 0x04
+    } else {
+      mode_byte
+    }
+  }
 }
 
 impl Compilable for Element {
   fn compile(&self, buf: &mut Vec<u8>) {
-    /*
-    let (expr_bit, init) = if self.init_expr.is_empty() {
-      (0x00, self.init_expr.iter() as &dyn Iter)
-    } else {
-      (0x04, self.init_func.iter())
-    };
-    if self.type_ != 0 {
-      todo!()
-    }
-    */
     match &self.mode {
       ElementMode::Passive => {
-        let mut byte = 0x01;
-        if !self.init_expr.is_empty() {
-          byte += 0x04;
-        }
-        buf.push(byte);
-        todo!()
+        buf.push(self.leading_byte(0x01));
+        buf.push(self.type_);
+        self.compile_init(buf);
       }
       ElementMode::Active{ table_idx, offset } => {
-        let mut byte = 0x00;
-        if !self.init_expr.is_empty() {
-          byte += 0x04;
-        }
+        let byte = self.leading_byte(0x00);
         if *table_idx != 0 {
           buf.push(byte + 0x02);
           buf.extend(&from_u32(*table_idx));
@@ -67,25 +74,10 @@ impl Compilable for Element {
         if *table_idx != 0 {
           buf.push(self.type_);
         }
-        if self.init_expr.is_empty() {
-          buf.extend(&from_u32(self.init_func.len() as u32));
-          for function_idx in self.init_func.iter() {
-            buf.extend(&from_u32(*function_idx));
-          }
-        } else {
-          buf.push(0x01);
-          for instruction in self.init_expr.iter() {
-            instruction.compile(buf);
-          }
-          buf.push(0x0b);
-        }
+        self.compile_init(buf);
       }
       ElementMode::Declarative => {
-        let mut byte = 0x03;
-        if !self.init_expr.is_empty() {
-          byte += 0x04;
-        }
-        buf.push(byte);
+        buf.push(self.leading_byte(0x03));
         todo!()
       }
     };

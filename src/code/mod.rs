@@ -8,6 +8,7 @@ pub mod memory;
 pub mod numeric;
 pub mod parametric;
 pub mod reference;
+pub mod table;
 pub mod variable;
 
 pub struct Local {
