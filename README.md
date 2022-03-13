@@ -86,7 +86,7 @@ If you want to join the development and contribute to the project, please reach 
 
 - [ ] table.get
 - [ ] table.set
-- [ ] table.init
+- [x] table.init
 - [ ] elem.drop
 - [ ] table.copy
 - [ ] table.grow
@@ -522,7 +522,7 @@ If you want to join the development and contribute to the project, please reach 
   - [x] Mem
   - [ ] Global
 - [ ] Start
-- [ ] Element
+- [x] Element (except declarative)
 - [ ] Data count
 - [x] Code
 - [x] Data
