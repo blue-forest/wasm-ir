@@ -20,6 +20,7 @@ use crate::{
   Limit,
   Table,
 };
+use crate::code::reference::RefInstruction;
 use crate::values::from_u32;
 
 pub struct Module {
@@ -35,6 +36,7 @@ pub struct Module {
   // data_count:  Vec<Box<dyn Compilable>>,
   sec_code:    Vec<Box<dyn Compilable>>,
   sec_data:    Vec<Box<dyn Compilable>>,
+  sec_name:    Vec<Box<dyn Compilable>>,
   // sec_custom:  Vec<Box<dyn Compilable>>,
   table_count: u32,
   func_count:  u32,
@@ -55,10 +57,16 @@ impl Module {
       // data_count:  Vec::new(),
       sec_code:    Vec::new(),
       sec_data:    Vec::new(),
+      sec_name:    Vec::new(),
       // sec_custom:  Vec::new(),
       table_count: 0,
       func_count:  0,
     }
+  }
+
+  pub fn with_name(mut self, name: String) -> Self {
+    self.sec_name.push(Box::new(ModuleName::new(name)));
+    self
   }
 
   pub fn export_table(&mut self, limit: Limit, export: Export) -> u32 {
@@ -113,6 +121,18 @@ impl Module {
     let function_idx = self.func_count;
     self.func_count += 1;
     function_idx
+  }
+
+  pub fn add_expression_element(
+    &mut self,
+    expr:         Vec<Box<dyn RefInstruction>>,
+    element_mode: ElementMode,
+  ) -> u32 {
+    let element_idx = self.sec_elem.len() as u32;
+    self.sec_elem.push(Box::new(Element::with_expr(
+      FUNC_REF, expr, element_mode,
+    )));
+    element_idx
   }
 
   pub fn add_function_element(
@@ -179,6 +199,22 @@ impl Module {
     }));
   }
 
+  pub fn compile_debug(&self) -> Vec<u8> {
+    let mut result = self.compile();
+    if !self.sec_name.is_empty() {
+      let mut section_content = Vec::new();
+      for entry in self.sec_name.iter() {
+        entry.compile(&mut section_content);
+      }
+      result.push(0x00); // custom section
+      result.extend(&from_u32((section_content.len()+5) as u32)); // +5 for name
+      result.push(0x04); // "name" length
+      result.extend("name".as_bytes());
+      result.extend(&section_content);
+    }
+    result
+  }
+
   pub fn compile(&self) -> Vec<u8> {
     let mut result = vec![
       0x00, 0x61, 0x73, 0x6d, // magic
@@ -194,6 +230,12 @@ impl Module {
     compile_section(&mut result, &self.sec_code,   0x0a);
     compile_section(&mut result, &self.sec_data,   0x0b);
     result
+  }
+
+  pub fn write_debug(&self, filename: &Path) -> Result<()> {
+    let mut file = File::create(filename)?;
+    file.write_all(&self.compile_debug())?;
+    Ok(())
   }
 
   pub fn write(&self, filename: &Path) -> Result<()> {
@@ -251,6 +293,25 @@ impl Compilable for ModuleExport {
       }
       _ => { todo!() }
     }
+  }
+}
+
+pub struct ModuleName {
+  name: String,
+}
+
+impl ModuleName {
+  pub fn new(name: String) -> Self {
+    Self{ name }
+  }
+}
+
+impl Compilable for ModuleName {
+  fn compile(&self, buf: &mut Vec<u8>) {
+    buf.push(0x00); // module name
+    buf.extend(&from_u32((self.name.len() + 1) as u32));
+    buf.extend(&from_u32(self.name.len() as u32));
+    buf.extend(self.name.as_bytes());
   }
 }
 

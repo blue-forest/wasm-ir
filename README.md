@@ -64,9 +64,9 @@ If you want to join the development and contribute to the project, please reach 
 
 #### Reference
 
-- [ ] ref.null
-- [ ] ref.is\_null
-- [ ] ref.func
+- [x] ref.null
+- [x] ref.is\_null
+- [x] ref.func
 
 #### Parametric
 
@@ -86,7 +86,7 @@ If you want to join the development and contribute to the project, please reach 
 
 - [ ] table.get
 - [ ] table.set
-- [ ] table.init
+- [x] table.init
 - [ ] elem.drop
 - [ ] table.copy
 - [ ] table.grow
@@ -522,7 +522,7 @@ If you want to join the development and contribute to the project, please reach 
   - [x] Mem
   - [ ] Global
 - [ ] Start
-- [ ] Element
+- [x] Element (except declarative)
 - [ ] Data count
 - [x] Code
 - [x] Data

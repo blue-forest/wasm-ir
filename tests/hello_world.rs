@@ -56,7 +56,7 @@ fn generate_hello_world() -> Module {
 fn hello_world() {
   let ir = generate_hello_world();
   let binary = ir.compile();
-  let mut embedder = common::Embedder::new();
+  let mut embedder = common::Embedder::new("8420");
   embedder.run(binary);
   let mut stream = embedder.listener.incoming().next().unwrap().unwrap();
   let mut buf: [u8; 12] = [0; 12];

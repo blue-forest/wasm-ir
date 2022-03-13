@@ -15,10 +15,10 @@ pub struct Embedder {
 }
 
 impl Embedder {
-  pub fn new() -> Self {
-    let listener = TcpListener::bind("127.0.0.1:8420").unwrap();
+  pub fn new(port: &str) -> Self {
+    let listener = TcpListener::bind(format!("127.0.0.1:{}", port)).unwrap();
     let stream = cap_std::net::TcpStream::from_std(
-      net::TcpStream::connect("127.0.0.1:8420").unwrap()
+      net::TcpStream::connect(format!("127.0.0.1:{}", port)).unwrap()
     );
     let wasi_ctx = WasiCtxBuilder::new()
       .stdout(Box::new(TcpStream::from_cap_std(stream)))
