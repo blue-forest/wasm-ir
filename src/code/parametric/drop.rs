@@ -1,8 +1,4 @@
-// This code is free software distributed under GPLv3 by Blue Forest.
-
-use crate::Compilable;
-
-use super::Instruction;
+use crate::{Compilable, Instruction};
 
 pub struct DropStack{}
 

@@ -1,6 +1,5 @@
-use crate::Compilable;
+use crate::{Compilable, Instruction};
 use crate::values::from_u32;
-use super::Instruction;
 
 pub struct TableInit {
   element_idx: u32,
