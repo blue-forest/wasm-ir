@@ -1,6 +1,5 @@
-use crate::Compilable;
+use crate::{Compilable, Instruction};
 use crate::values::from_u32;
-use super::Instruction;
 
 pub struct TableInit {
   element_idx: u32,
@@ -11,13 +10,13 @@ pub struct TableInit {
 }
 
 impl TableInit {
-  pub fn new(
+  pub fn with_operands(
     element_idx: u32,
     table_idx:   u32,
     destination: Box<dyn Instruction>,
     offset:      Box<dyn Instruction>,
     size:        Box<dyn Instruction>,
-  ) -> Box<Self> {
+  ) -> Box<dyn Instruction> {
     Box::new(Self{
       element_idx,
       table_idx,
@@ -27,7 +26,7 @@ impl TableInit {
     })
   }
 
-  pub fn new_stacked(element_idx: u32, table_idx: u32) -> Box<Self> {
+  pub fn with_stack(element_idx: u32, table_idx: u32) -> Box<dyn Instruction> {
     Box::new(Self{
       element_idx,
       table_idx,

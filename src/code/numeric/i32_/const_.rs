@@ -1,14 +1,10 @@
-// This code is free software distributed under GPLv3 by Blue Forest.
-
-use crate::Compilable;
+use crate::{Compilable, Instruction};
 use crate::values::from_u32;
-
-use super::Instruction;
 
 pub struct I32Const(u32);
 
 impl I32Const {
-  pub fn new(value: u32) -> Box<Self> {
+  pub fn create(value: u32) -> Box<dyn Instruction> {
     Box::new(Self(value))
   }
 }

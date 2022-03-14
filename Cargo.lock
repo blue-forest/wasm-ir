@@ -1145,7 +1145,7 @@ dependencies = [
 
 [[package]]
 name = "wasm-ir"
-version = "0.1.6"
+version = "0.1.7"
 dependencies = [
  "cap-std",
  "wasmtime",

@@ -1,9 +1,5 @@
-// This code is free software distributed under GPLv3 by Blue Forest.
-
-use crate::Compilable;
+use crate::{Compilable, Instruction};
 use crate::values::from_u32;
-
-use super::Instruction;
 
 pub struct I32Store {
   align:   u32,
@@ -13,12 +9,12 @@ pub struct I32Store {
 }
 
 impl I32Store {
-  pub fn new(
+  pub fn with_operands(
     align:   u32,
     offset:  u32,
     address: Box<dyn Instruction>,
     value:   Box<dyn Instruction>,
-  ) -> Box<Self> {
+  ) -> Box<dyn Instruction> {
     Box::new(Self{
       align,
       offset,
@@ -27,7 +23,7 @@ impl I32Store {
     })
   }
 
-  pub fn new_stacked(align: u32, offset: u32) -> Box<Self> {
+  pub fn with_stack(align: u32, offset: u32) -> Box<dyn Instruction> {
     Box::new(Self{
       align,
       offset,

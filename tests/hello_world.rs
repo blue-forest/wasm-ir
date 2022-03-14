@@ -11,11 +11,11 @@ mod common;
 
 fn generate_hello_world() -> Module {
   let mut ir = Module::new();
-  ir.set_memory(Limit::new(1, None));
+  ir.export_memory(Limit::new(1, None));
   ir.add_data(Data::new(
     "hello world\n".to_string().into_bytes(),
     DataMode::Active(
-      I32Const::new(8),
+      I32Const::create(8),
     ),
   ));
 
@@ -23,32 +23,32 @@ fn generate_hello_world() -> Module {
     vec![I32, I32, I32, I32],
     vec![I32],
   );
-  let (_, fd_write_idx) = ir.import_function(fd_write_type, Import::new(
+  let (_, fd_write_idx) = ir.import_function(Import::new(
     "wasi_unstable".to_string(), "fd_write".to_string()
-  ));
+  ), fd_write_type);
 
   let start_type = FunctionType::new(vec![], vec![]);
   let start_body = Body::new(Vec::new(), vec![
-    I32Store::new(2, 0,
-      I32Const::new(0),
-      I32Const::new(8),
+    I32Store::with_operands(2, 0,
+      I32Const::create(0),
+      I32Const::create(8),
     ),
-    I32Store::new(2, 0,
-      I32Const::new(4),
-      I32Const::new(12),
+    I32Store::with_operands(2, 0,
+      I32Const::create(4),
+      I32Const::create(12),
     ),
-    Call::new(
+    Call::with_operands(
       fd_write_idx,
       vec![
-        I32Const::new(1),  // file_descriptor - 1 for stdout
-        I32Const::new(0),  // *iovs
-        I32Const::new(1),  // iovs_len
-        I32Const::new(20), // nwritten
+        I32Const::create(1),  // file_descriptor - 1 for stdout
+        I32Const::create(0),  // *iovs
+        I32Const::create(1),  // iovs_len
+        I32Const::create(20), // nwritten
       ],
     ),
-    DropStack::new(),
+    DropStack::create(),
   ]);
-  ir.add_exported_function(start_type, start_body, "_start".to_string());
+  ir.export_function("_start".to_string(), start_type, start_body);
   ir
 }
 
