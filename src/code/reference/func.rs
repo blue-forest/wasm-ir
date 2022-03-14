@@ -8,7 +8,7 @@ pub struct RefFunc {
 }
 
 impl RefFunc {
-  pub fn new(function_idx: u32) -> Box<dyn RefInstruction> {
+  pub fn create(function_idx: u32) -> Box<dyn RefInstruction> {
     Box::new(Self{ function_idx })
   }
 }

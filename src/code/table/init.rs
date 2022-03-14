@@ -10,7 +10,7 @@ pub struct TableInit {
 }
 
 impl TableInit {
-  pub fn new(
+  pub fn with_operands(
     element_idx: u32,
     table_idx:   u32,
     destination: Box<dyn Instruction>,
@@ -26,7 +26,7 @@ impl TableInit {
     })
   }
 
-  pub fn new_stacked(element_idx: u32, table_idx: u32) -> Box<dyn Instruction> {
+  pub fn with_stack(element_idx: u32, table_idx: u32) -> Box<dyn Instruction> {
     Box::new(Self{
       element_idx,
       table_idx,

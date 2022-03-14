@@ -7,6 +7,12 @@ use crate::values::from_u32;
 use super::Module;
 
 impl Module {
+  pub fn with_name(name: String) -> Self {
+    let mut result = Self::new();
+    result.sec_name.push(Box::new(ModuleName::new(name)));
+    result
+  }
+
   pub fn compile_debug(&self) -> Vec<u8> {
     let mut result = self.compile();
     if !self.sec_name.is_empty() {
@@ -21,11 +27,6 @@ impl Module {
       result.extend(&section_content);
     }
     result
-  }
-
-  pub fn with_name(mut self, name: String) -> Self {
-    self.sec_name.push(Box::new(ModuleName::new(name)));
-    self
   }
 
   pub fn write_debug(&self, filename: &Path) -> Result<()> {

@@ -7,7 +7,7 @@ pub struct RefNull {
 }
 
 impl RefNull {
-  pub fn new(type_: u8) -> Box<dyn RefInstruction> {
+  pub fn create(type_: u8) -> Box<dyn RefInstruction> {
     Box::new(Self{ type_ })
   }
 }

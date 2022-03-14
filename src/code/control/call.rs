@@ -7,14 +7,14 @@ pub struct Call {
 }
 
 impl Call {
-  pub fn new(
+  pub fn with_operands(
     function_idx: u32,
     parameters:   Vec<Box<dyn Instruction>>
   ) -> Box<dyn Instruction> {
     Box::new(Self{ function_idx, parameters })
   }
 
-  pub fn new_stacked(function_idx: u32) -> Box<dyn Instruction> {
+  pub fn with_stack(function_idx: u32) -> Box<dyn Instruction> {
     Box::new(Self{ function_idx, parameters: Vec::new() })
   }
 }

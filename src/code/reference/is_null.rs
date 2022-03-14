@@ -3,7 +3,7 @@ use crate::{Compilable, Instruction};
 pub struct RefIsNull{}
 
 impl RefIsNull {
-  pub fn new() -> Box<dyn Instruction> {
+  pub fn create() -> Box<dyn Instruction> {
     Box::new(Self{})
   }
 }

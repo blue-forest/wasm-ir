@@ -19,20 +19,20 @@ fn get_name(is_expr: bool, module: &mut Module, mode: ElementMode) {
   module.add_data(Data::new(
     test_str.clone(),
     DataMode::Active(
-      I32Const::new(test_address),
+      I32Const::create(test_address),
     ),
   ));
 
   let body = Body::new(Vec::new(), vec![
-    I32Const::new(test_address),
-    I32Const::new(test_str.len() as u32)
+    I32Const::create(test_address),
+    I32Const::create(test_str.len() as u32)
   ]);
   if is_expr {
     let (_, function_idx) = module.add_function(
       type_(), body,
     );
     module.add_expression_element(vec![
-      RefFunc::new(function_idx),
+      RefFunc::create(function_idx),
     ], mode);
   } else {
     module.add_function_element(
@@ -47,10 +47,10 @@ fn init(module: &mut Module) {
     "init".to_string(),
     FunctionType::new(Vec::new(), Vec::new()),
     Body::new(Vec::new(), vec![
-      TableInit::new(0, 0,
-        I32Const::new(0), // region start
-        I32Const::new(0), // offset
-        I32Const::new(1), // region size
+      TableInit::with_operands(0, 0,
+        I32Const::create(0), // region start
+        I32Const::create(0), // offset
+        I32Const::create(1), // region size
       ),
     ]),
   );
@@ -58,7 +58,7 @@ fn init(module: &mut Module) {
 
 pub fn module(is_expr: bool, mode: ElementMode) -> Module {
   let is_passive = matches!(mode, ElementMode::Passive);
-  let mut result = Module::new().with_name("imported".to_string());
+  let mut result = Module::with_name("imported".to_string());
   result.export_memory(Limit::new(1, Some(1)));
   tables(&mut result, &mode);
   get_name(is_expr, &mut result, mode);

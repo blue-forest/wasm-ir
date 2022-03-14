@@ -4,7 +4,7 @@ use crate::values::from_u32;
 pub struct I32Const(u32);
 
 impl I32Const {
-  pub fn new(value: u32) -> Box<dyn Instruction> {
+  pub fn create(value: u32) -> Box<dyn Instruction> {
     Box::new(Self(value))
   }
 }

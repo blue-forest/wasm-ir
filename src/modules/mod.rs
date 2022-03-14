@@ -80,9 +80,13 @@ impl Module {
   }
 }
 
+impl Default for Module {
+  fn default() -> Self { Self::new() }
+}
+
 fn compile_section(
   buf:        &mut Vec<u8>,
-  section:    &Vec<Box<dyn Compilable>>,
+  section:    &[Box<dyn Compilable>],
   section_id: u8,
 ) {
   if !section.is_empty() {

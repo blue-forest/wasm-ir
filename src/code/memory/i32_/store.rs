@@ -9,7 +9,7 @@ pub struct I32Store {
 }
 
 impl I32Store {
-  pub fn new(
+  pub fn with_operands(
     align:   u32,
     offset:  u32,
     address: Box<dyn Instruction>,
@@ -23,7 +23,7 @@ impl I32Store {
     })
   }
 
-  pub fn new_stacked(align: u32, offset: u32) -> Box<dyn Instruction> {
+  pub fn with_stack(align: u32, offset: u32) -> Box<dyn Instruction> {
     Box::new(Self{
       align,
       offset,

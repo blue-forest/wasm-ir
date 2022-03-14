@@ -9,7 +9,7 @@ pub struct CallIndirect {
 }
 
 impl CallIndirect {
-  pub fn new(
+  pub fn with_operands(
     type_idx:     u32,
     table_idx:    u32,
     parameters:   Vec<Box<dyn Instruction>>,
@@ -23,7 +23,7 @@ impl CallIndirect {
     })
   }
 
-  pub fn new_stacked(
+  pub fn with_stack(
     type_idx:     u32,
     table_idx:    u32,
   ) -> Box<dyn Instruction> {

@@ -17,7 +17,7 @@ use wasm_ir::code::variable::{LocalGet, LocalSet};
 use super::imported;
 
 pub fn module(is_passive: bool) -> Module {
-  let mut result = Module::new().with_name("caller".to_string());
+  let mut result = Module::with_name("caller".to_string());
   result.import_memory(
     Import::new("env".to_string(), "memory".to_string()),
     Limit::new(1, Some(1)),
@@ -69,25 +69,25 @@ fn start_instructions(
       Import::new("env".to_string(), "init".to_string()),
       FunctionType::new(Vec::new(),Vec::new()),
     );
-     result.push(Call::new(init_idx, Vec::new()));
+     result.push(Call::with_stack(init_idx));
   }
   result.extend(vec![
-    I32Const::new(0), // iovs base address
-    CallIndirect::new(
-      imported_type_idx, table_idx, Vec::new(), I32Const::new(0),
+    I32Const::create(0), // iovs base address
+    CallIndirect::with_operands(
+      imported_type_idx, table_idx, Vec::new(), I32Const::create(0),
     ), // get_test() -> iovs.base, iovs.length
-    LocalSet::new(0), // set iovs.length
-    I32Store::new_stacked(2, 0), // store iovs.base
-    I32Const::new(4), // iovs length address
-    LocalGet::new(0), // get iovs.length
-    I32Store::new_stacked(2, 0), // store iovs.length
-    Call::new(fd_write_idx, vec![
-      I32Const::new(1),  // file_descriptor - 1 for stdout
-      I32Const::new(0),  // iovs address
-      I32Const::new(1),  // iovs len
-      I32Const::new(8),  // nwritten
+    LocalSet::create(0), // set iovs.length
+    I32Store::with_stack(2, 0), // store iovs.base
+    I32Const::create(4), // iovs length address
+    LocalGet::create(0), // get iovs.length
+    I32Store::with_stack(2, 0), // store iovs.length
+    Call::with_operands(fd_write_idx, vec![
+      I32Const::create(1),  // file_descriptor - 1 for stdout
+      I32Const::create(0),  // iovs address
+      I32Const::create(1),  // iovs len
+      I32Const::create(8),  // nwritten
     ]),
-    DropStack::new(),
+    DropStack::create(),
   ]);
   result
 }
