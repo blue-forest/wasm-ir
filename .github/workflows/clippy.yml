@@ -1,0 +1,30 @@
+name: Clippy check
+on:
+  push:
+  workflow_dispatch:
+jobs:
+  clippy_check:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+    - uses: actions/cache@v1
+      with:
+        path: ~/.cargo/registry
+        key: '${{ runner.os }}-cargo-registry-${{ hashFiles(''**/Cargo.lock'') }}'
+    - uses: actions/cache@v1
+      with:
+        path: ~/.cargo/git
+        key: '${{ runner.os }}-cargo-index-${{ hashFiles(''**/Cargo.lock'') }}'
+    - uses: actions/cache@v1
+      with:
+        path: target
+        key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
+    - uses: actions-rs/toolchain@v1
+      with:
+        toolchain: nightly
+        components: clippy
+        override: true
+    - uses: actions-rs/clippy-check@v1
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        args: --all-features
