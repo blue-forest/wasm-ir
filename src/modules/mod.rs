@@ -20,7 +20,7 @@ use std::fs::File;
 use std::io::{Result, Write};
 use std::path::Path;
 
-use crate::Compilable;
+use crate::{Compilable, StartFunction};
 use crate::values::from_u32;
 
 mod debug;
@@ -40,7 +40,7 @@ pub struct Module {
   sec_mem:     Vec<Box<dyn Compilable>>,
   // sec_global:  Vec<Box<dyn Compilable>>,
   sec_export:  Vec<Box<dyn Compilable>>,
-  // sec_start:   Vec<Box<dyn Compilable>>,
+  sec_start:   Option<StartFunction>,
   sec_elem:    Vec<Box<dyn Compilable>>,
   // data_count:  Vec<Box<dyn Compilable>>,
   sec_code:    Vec<Box<dyn Compilable>>,
@@ -61,7 +61,7 @@ impl Module {
       sec_mem:     Vec::new(),
       // sec_global:  Vec::new(),
       sec_export:  Vec::new(),
-      // sec_start:   Vec::new(),
+      sec_start:   None,
       sec_elem:    Vec::new(),
       // data_count:  Vec::new(),
       sec_code:    Vec::new(),
@@ -84,6 +84,9 @@ impl Module {
     compile_section(&mut result, &self.sec_table,  0x04);
     compile_section(&mut result, &self.sec_mem,    0x05);
     compile_section(&mut result, &self.sec_export, 0x07);
+    if let Some(start) = &self.sec_start {
+      start.compile(&mut result);
+    }
     compile_section(&mut result, &self.sec_elem,   0x09);
     compile_section(&mut result, &self.sec_code,   0x0a);
     compile_section(&mut result, &self.sec_data,   0x0b);

@@ -62,9 +62,12 @@ impl Embedder {
   }
 
   pub fn run(&mut self, binary: Vec<u8>) {
+    self.instantiate(binary);
+    /*
     let start = self.instantiate(binary).get_typed_func::<(), (), _>(
       &mut self.store, "_start"
     ).unwrap();
     start.call(&mut self.store, ()).unwrap();
+    */
   }
 }

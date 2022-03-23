@@ -66,7 +66,10 @@ fn generate_hello_world() -> Module {
     ),
     DropStack::create(),
   ]);
-  ir.export_function("_start".to_string(), start_type, start_body);
+  let (_, start_idx) = ir.export_function(
+    "_start".to_string(), start_type, start_body,
+  );
+  ir.set_start(start_idx);
   ir
 }
 

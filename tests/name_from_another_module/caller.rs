@@ -60,7 +60,7 @@ pub fn module(is_passive: bool) -> Module {
     table_idx,
     is_passive,
   );
-  result.export_function(
+  let (_, start_idx) = result.export_function(
     "_start".to_string(),
     FunctionType::new(Vec::new(), Vec::new()),
     Body::new(
@@ -70,6 +70,7 @@ pub fn module(is_passive: bool) -> Module {
       instructions,
     ),
   );
+  result.set_start(start_idx);
   result
 }
 
@@ -94,7 +95,7 @@ fn start_instructions(
     CallIndirect::with_operands(
       imported_type_idx, table_idx, Vec::new(), I32Const::create(0),
     ), // get_test() -> iovs.base, iovs.length
-    LocalSet::create(0), // set iovs.length
+    LocalSet::with_stack(0), // set iovs.length
     I32Store::with_stack(2, 0), // store iovs.base
     I32Const::create(4), // iovs length address
     LocalGet::create(0), // get iovs.length

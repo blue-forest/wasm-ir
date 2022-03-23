@@ -31,7 +31,7 @@ mod exports;
 pub use exports::{Export, ExportDescription};
 
 mod functions;
-pub use functions::Function;
+pub use functions::{Function, StartFunction};
 
 mod imports;
 pub use imports::{Import, ImportDescription};
