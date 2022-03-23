@@ -16,6 +16,8 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
+use std::fmt::Debug;
+
 pub mod code;
 pub use code::{Body, Instruction, Local};
 
@@ -45,7 +47,7 @@ pub use types::*;
 
 pub mod values;
 
-pub trait Compilable {
+pub trait Compilable: Debug {
   fn compile(&self, buf: &mut Vec<u8>);
 }
 

@@ -19,6 +19,7 @@
 use crate::{Compilable, Instruction};
 use crate::values::from_u32;
 
+#[derive(Debug)]
 pub struct Data {
   byte: Vec<u8>,
   mode: DataMode,
@@ -38,6 +39,7 @@ impl Compilable for Data {
   }
 }
 
+#[derive(Debug)]
 pub enum DataMode {
   Passive,
   Active(Box<dyn Instruction>)

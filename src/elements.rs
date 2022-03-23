@@ -20,6 +20,7 @@ use crate::{Compilable, Instruction};
 use crate::code::reference::RefInstruction;
 use crate::values::from_u32;
 
+#[derive(Debug)]
 pub struct Element {
   type_:     u8,
   init_expr: Vec<Box<dyn RefInstruction>>,
@@ -102,6 +103,7 @@ impl Compilable for Element {
   }
 }
 
+#[derive(Debug)]
 pub enum ElementMode {
   Passive,
   Active{

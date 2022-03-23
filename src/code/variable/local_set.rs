@@ -19,6 +19,7 @@
 use crate::{Compilable, Instruction};
 use crate::values::from_u32;
 
+#[derive(Debug)]
 pub struct LocalSet {
   local_idx: u32,
 }

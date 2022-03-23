@@ -18,6 +18,7 @@
 
 use crate::{Compilable, Instruction};
 
+#[derive(Debug)]
 pub struct DropStack{}
 
 impl DropStack {

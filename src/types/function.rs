@@ -19,6 +19,7 @@
 use crate::Compilable;
 use crate::values::from_u32;
 
+#[derive(Debug)]
 pub struct FunctionType {
   parameters: Vec<u8>,
   result:     Vec<u8>,
