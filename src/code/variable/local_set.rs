@@ -22,16 +22,27 @@ use crate::values::from_u32;
 #[derive(Debug)]
 pub struct LocalSet {
   local_idx: u32,
+  value:     Option<Box<dyn Instruction>>,
 }
 
 impl LocalSet {
-  pub fn create(local_idx: u32) -> Box<dyn Instruction> {
-    Box::new(Self{ local_idx })
+  pub fn with_stack(local_idx: u32) -> Box<dyn Instruction> {
+    Box::new(Self{ local_idx, value: None })
+  }
+
+  pub fn with_operands(
+    local_idx: u32,
+    value: Box<dyn Instruction>
+  ) -> Box<dyn Instruction> {
+    Box::new(Self{ local_idx, value: Some(value) })
   }
 }
 
 impl Compilable for LocalSet {
   fn compile(&self, buf: &mut Vec<u8>) {
+    if let Some(value) = &self.value {
+      value.compile(buf);
+    }
     buf.push(0x21);
     buf.extend(&from_u32(self.local_idx));
   }
