@@ -31,6 +31,7 @@ mod memories;
 mod segments;
 mod tables;
 
+#[derive(Debug)]
 pub struct Module {
   sec_type:    Vec<Box<dyn Compilable>>,
   sec_import:  Vec<Box<dyn Compilable>>,

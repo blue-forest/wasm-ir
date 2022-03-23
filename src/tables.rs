@@ -19,6 +19,7 @@
 use crate::Compilable;
 use crate::types::Limit;
 
+#[derive(Debug)]
 pub struct Table {
   ref_type: u8,
   limit:    Limit,

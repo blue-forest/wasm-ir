@@ -16,6 +16,8 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
+use std::fmt::Debug;
+
 use crate::Compilable;
 use crate::values::from_u32;
 
@@ -27,6 +29,7 @@ pub mod reference;
 pub mod table;
 pub mod variable;
 
+#[derive(Debug)]
 pub struct Local {
   n:       u32,
   valtype: u8,
@@ -45,6 +48,7 @@ impl Compilable for Local {
   }
 }
 
+#[derive(Debug)]
 pub struct Body {
   locals:       Vec<Local>,
   instructions: Vec<Box<dyn Instruction>>,
@@ -77,4 +81,4 @@ impl Compilable for Body {
   }
 }
 
-pub trait Instruction: Compilable {}
+pub trait Instruction: Compilable + Debug {}
