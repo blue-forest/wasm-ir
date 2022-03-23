@@ -18,6 +18,5 @@
 
 mod load;
 pub use load::I32Load;
-
 mod store;
 pub use store::I32Store;
