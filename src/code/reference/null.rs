@@ -20,6 +20,7 @@ use crate::{Compilable, Instruction};
 
 use super::RefInstruction;
 
+#[derive(Debug)]
 pub struct RefNull {
   type_: u8,
 }

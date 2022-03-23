@@ -19,6 +19,7 @@
 use crate::{Compilable, Instruction};
 use crate::values::from_u32;
 
+#[derive(Debug)]
 pub struct I32Store {
   align:   u32,
   offset:  u32,

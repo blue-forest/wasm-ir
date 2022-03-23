@@ -54,6 +54,7 @@ impl Module {
   }
 }
 
+#[derive(Debug)]
 pub struct ModuleName {
   name: String,
 }

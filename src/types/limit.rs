@@ -19,6 +19,7 @@
 use crate::Compilable;
 use crate::values::from_u32;
 
+#[derive(Debug)]
 pub struct Limit {
   min: u32,
   max: Option<u32>,

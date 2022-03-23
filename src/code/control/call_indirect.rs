@@ -19,6 +19,7 @@
 use crate::{Compilable, Instruction};
 use crate::values::from_u32;
 
+#[derive(Debug)]
 pub struct CallIndirect {
   type_idx:     u32,
   table_idx:    u32,

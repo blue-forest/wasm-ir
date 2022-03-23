@@ -23,6 +23,7 @@ use crate::{
 };
 use crate::values::from_u32;
 
+#[derive(Debug)]
 pub struct ModuleExport {
   pub export:      Export,
   pub description: ExportDescription,

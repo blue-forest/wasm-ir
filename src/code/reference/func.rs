@@ -21,6 +21,7 @@ use crate::values::from_u32;
 
 use super::RefInstruction;
 
+#[derive(Debug)]
 pub struct RefFunc {
   function_idx: u32,
 }

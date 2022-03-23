@@ -20,6 +20,7 @@ use crate::{Compilable, Limit};
 use crate::tables::Table;
 use crate::values::from_u32;
 
+#[derive(Debug)]
 pub struct Import {
   module: String,
   name:   String,
@@ -43,6 +44,7 @@ impl Compilable for Import {
   }
 }
 
+#[derive(Debug)]
 pub enum ImportDescription {
   Func(u32),
   Table(Table),

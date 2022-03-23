@@ -19,6 +19,7 @@
 use crate::Compilable;
 use crate::values::from_u32;
 
+#[derive(Debug)]
 pub struct Export {
   name: String,
 }
@@ -36,6 +37,7 @@ impl Compilable for Export {
   }
 }
 
+#[derive(Debug)]
 pub enum ExportDescription {
   Func(u32),
   Table(u32),
