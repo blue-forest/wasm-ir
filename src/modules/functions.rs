@@ -24,6 +24,7 @@ use crate::{
   ExportDescription,
   Function,
   FunctionType,
+  StartFunction,
 };
 
 use super::Module;
@@ -86,5 +87,9 @@ impl Module {
     let function_idx = self.func_count;
     self.func_count += 1;
     function_idx
+  }
+
+  pub fn set_start(&mut self, function_idx: u32) {
+    self.sec_start = Some(StartFunction::new(function_idx));
   }
 }

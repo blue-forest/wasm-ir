@@ -33,3 +33,22 @@ impl Compilable for Function {
     buf.extend(&from_u32(self.0));
   }
 }
+
+#[derive(Debug)]
+pub struct StartFunction(Function);
+
+impl StartFunction {
+  pub fn new(value: u32) -> Self {
+    Self(Function::new(value))
+  }
+}
+
+impl Compilable for StartFunction {
+  fn compile(&self, buf: &mut Vec<u8>) {
+    let mut section = Vec::new();
+    self.0.compile(&mut section);
+    buf.push(0x08); // section id
+    buf.extend(&from_u32(section.len() as u32));
+    buf.extend(section);
+  }
+}
