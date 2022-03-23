@@ -16,5 +16,8 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
+mod load;
+pub use load::I32Load;
+
 mod store;
 pub use store::I32Store;
