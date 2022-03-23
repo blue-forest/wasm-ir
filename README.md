@@ -96,7 +96,7 @@ If you want to join the development and contribute to the project, please reach 
 
 #### Memory
 
-- [ ] i32.load
+- [x] i32.load
 - [ ] i64.load
 - [ ] f32.load
 - [ ] f64.load
