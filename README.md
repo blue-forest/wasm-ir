@@ -522,7 +522,7 @@ If you want to join the development and contribute to the project, please reach 
   - [x] Table
   - [x] Mem
   - [ ] Global
-- [ ] Start
+- [x] Start
 - [x] Element (except declarative)
 - [ ] Data count
 - [x] Code
