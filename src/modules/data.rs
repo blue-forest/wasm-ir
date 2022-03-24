@@ -16,38 +16,44 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-use std::fmt::Debug;
+use crate::{Compilable, Data};
+use super::{Module, Section};
 
-pub mod code;
-pub use code::{Body, Instruction, Local, LocalBuilder};
-
-mod data;
-pub use data::{Data, DataMode};
-
-mod elements;
-pub use elements::{Element, ElementMode};
-
-mod exports;
-pub use exports::{Export, ExportDescription};
-
-mod functions;
-pub use functions::StartFunction;
-
-mod imports;
-pub use imports::{Import, ImportDescription};
-
-mod modules;
-pub use modules::{Module, Section};
-
-mod tables;
-pub use tables::Table;
-
-mod types;
-pub use types::*;
-
-pub mod values;
-
-pub trait Compilable: Debug {
-  fn compile(&self, buf: &mut Vec<u8>);
+impl Module {
+  pub fn add_data(&mut self, data: Data) {
+    self.sec_data.push(data);
+  }
 }
 
+#[derive(Debug)]
+pub struct DataSection {
+  data: Vec<Data>,
+}
+
+impl DataSection {
+  pub fn new() -> Self {
+    Self{ data: Vec::new() }
+  }
+
+  pub fn push(&mut self, data: Data) {
+    self.data.push(data);
+  }
+}
+
+impl Default for DataSection {
+  fn default() -> Self { Self::new() }
+}
+
+impl Section for DataSection {
+  fn section_id(&self) -> u8 { 0x0b }
+
+  fn len(&self) -> u32 { self.data.len() as u32 }
+
+  fn content(&self, _module: &Module) -> Vec<u8> {
+    let mut result = Vec::new();
+    for data in self.data.iter() {
+      data.compile(&mut result);
+    }
+    result
+  }
+}

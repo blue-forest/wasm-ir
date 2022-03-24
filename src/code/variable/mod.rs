@@ -16,6 +16,9 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
+mod local;
+pub use local::{Local, LocalBuilder};
+
 mod local_get;
 pub use local_get::LocalGet;
 

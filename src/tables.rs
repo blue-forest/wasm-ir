@@ -37,3 +37,4 @@ impl Compilable for Table {
     self.limit.compile(buf);
   }
 }
+

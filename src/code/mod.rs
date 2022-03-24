@@ -28,34 +28,18 @@ pub mod parametric;
 pub mod reference;
 pub mod table;
 pub mod variable;
-
-#[derive(Debug)]
-pub struct Local {
-  n:       u32,
-  valtype: u8,
-}
-
-impl Local {
-  pub fn new(n: u32, valtype: u8) -> Self {
-    Self{ n, valtype }
-  }
-}
-
-impl Compilable for Local {
-  fn compile(&self, buf: &mut Vec<u8>) {
-    buf.extend(&from_u32(self.n));
-    buf.push(self.valtype);
-  }
-}
+pub use variable::{Local, LocalBuilder};
 
 #[derive(Debug)]
 pub struct Body {
+  //locals:       LocalBuilder,
   locals:       Vec<Local>,
   instructions: Vec<Box<dyn Instruction>>,
 }
 
 impl Body {
   pub fn new(
+    // locals:       LocalBuilder,
     locals:       Vec<Local>,
     instructions: Vec<Box<dyn Instruction>>
   ) -> Self {
@@ -66,6 +50,7 @@ impl Body {
 impl Compilable for Body {
   fn compile(&self, buf: &mut Vec<u8>) {
     // TODO: no allocation ?
+    // TODO: use localbuilder
     let mut code = Vec::new(); // locals
     code.extend(&from_u32(self.locals.len() as u32));
     for local in self.locals.iter() {
