@@ -168,6 +168,10 @@ impl LocalBuilder {
   }
 }
 
+impl Default for LocalBuilder {
+  fn default() -> Self { Self::new() }
+}
+
 pub struct Locals<'a> {
   builder: &'a LocalBuilder,
   type_:   &'a FunctionType,
