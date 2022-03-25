@@ -129,7 +129,7 @@ If you want to join the development and contribute to the project, please reach 
 #### Numeric
 
 - [x] i32.const
-- [ ] i64.const
+- [x] i64.const
 - [ ] f32.const
 - [ ] f64.const
 - [ ] i32.eqz
@@ -230,7 +230,7 @@ If you want to join the development and contribute to the project, please reach 
 - [ ] f64.min
 - [ ] f64.max
 - [ ] f64.copysign
-- [ ] i32.wrap\_i64
+- [x] i32.wrap\_i64
 - [ ] i32.trunc\_f32\_s
 - [ ] i32.trunc\_f32\_u
 - [ ] i32.trunc\_f64\_s

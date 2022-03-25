@@ -19,7 +19,7 @@
 use std::fmt::Debug;
 
 pub mod code;
-pub use code::{Body, ConstInstruction, Instruction, LocalBuilder};
+pub use code::{Body, ConstInstruction, Instruction, Local, LocalBuilder};
 
 mod data;
 pub use data::{Data, DataMode};

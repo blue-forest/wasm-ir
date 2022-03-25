@@ -18,3 +18,5 @@
 
 mod const_;
 pub use const_::I32Const;
+mod wrap_i64;
+pub use wrap_i64::I32WrapI64;

@@ -23,8 +23,8 @@ impl Local {
     Self{ idx, valtype }
   }
 
-  pub fn with_param(idx: u32) -> Self {
-    Self{ idx, valtype: 0 }
+  pub fn with_param(idx: u32) -> Arc<Self> {
+    Arc::new(Self{ idx, valtype: 0 })
   }
 }
 
