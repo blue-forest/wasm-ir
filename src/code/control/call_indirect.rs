@@ -16,7 +16,8 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-use crate::{Compilable, Instruction};
+use crate::Instruction;
+use crate::code::Locals;
 use crate::values::from_u32;
 
 #[derive(Debug)]
@@ -55,18 +56,16 @@ impl CallIndirect {
   }
 }
 
-impl Compilable for CallIndirect {
-  fn compile(&self, buf: &mut Vec<u8>) {
+impl Instruction for CallIndirect {
+  fn compile<'a>(&self, buf: &mut Vec<u8>, locals: &Locals<'a>) {
     if let Some(function_idx) = &self.function_idx {
-      function_idx.compile(buf);
+      function_idx.compile(buf, locals);
     }
     for parameter in self.parameters.iter() {
-      parameter.compile(buf);
+      parameter.compile(buf, locals);
     }
     buf.push(0x11);
     buf.extend(&from_u32(self.type_idx));
     buf.extend(&from_u32(self.table_idx));
   }
 }
-
-impl Instruction for CallIndirect {}

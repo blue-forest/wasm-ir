@@ -16,10 +16,8 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-use crate::{Compilable, Instruction};
+use crate::{ConstInstruction, Instruction};
 use crate::values::from_u32;
-
-use super::RefInstruction;
 
 #[derive(Debug)]
 pub struct RefFunc {
@@ -27,19 +25,18 @@ pub struct RefFunc {
 }
 
 impl RefFunc {
-  pub fn create(function_idx: u32) -> Box<dyn RefInstruction> {
+  pub fn create(function_idx: u32) -> Box<dyn Instruction> {
+    Box::new(Self{ function_idx })
+  }
+
+  pub fn with_const(function_idx: u32) -> Box<dyn ConstInstruction> {
     Box::new(Self{ function_idx })
   }
 }
 
-impl Compilable for RefFunc {
-  fn compile(&self, buf: &mut Vec<u8>) {
+impl ConstInstruction for RefFunc {
+  fn const_compile(&self, buf: &mut Vec<u8>) {
     buf.push(0xd2);
     buf.extend(&from_u32(self.function_idx));
   }
 }
-
-impl Instruction for RefFunc {}
-
-impl RefInstruction for RefFunc {}
-

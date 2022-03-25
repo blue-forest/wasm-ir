@@ -1,18 +1,18 @@
 use crate::{
   Body,
   Compilable,
+  ConstInstruction,
   Element,
   ElementMode,
   FUNC_REF,
   FunctionType,
 };
-use crate::code::reference::RefInstruction;
 use super::{Module, Section};
 
 impl Module {
   pub fn add_expression_element(
     &mut self,
-    expr:         Vec<Box<dyn RefInstruction>>,
+    expr:         Vec<Box<dyn ConstInstruction>>,
     element_mode: ElementMode,
   ) -> u32 {
     let element_idx = self.sec_elem.len() as u32;

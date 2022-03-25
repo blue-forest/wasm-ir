@@ -23,7 +23,7 @@ use wasm_ir::{
   Import,
   Instruction,
   Limit,
-  Local,
+  LocalBuilder,
   Module,
 };
 use wasm_ir::code::control::{Call, CallIndirect};
@@ -53,8 +53,10 @@ pub fn module(is_passive: bool) -> Module {
   );
 
   let imported_type_idx = result.add_type(imported::type_());
+  let mut local_builder = LocalBuilder::new();
   let instructions = start_instructions(
     &mut result,
+    &mut local_builder,
     fd_write_idx,
     imported_type_idx,
     table_idx,
@@ -63,12 +65,7 @@ pub fn module(is_passive: bool) -> Module {
   let (_, start_idx) = result.export_function(
     "_start".to_string(),
     FunctionType::new(Vec::new(), Vec::new()),
-    Body::new(
-      vec![
-        Local::new(1, I32),
-      ],
-      instructions,
-    ),
+    Body::new(local_builder, instructions),
   );
   result.set_start(start_idx);
   result
@@ -77,6 +74,7 @@ pub fn module(is_passive: bool) -> Module {
 #[inline(always)]
 fn start_instructions(
   module: &mut Module,
+  local_builder: &mut LocalBuilder,
   fd_write_idx: u32,
   imported_type_idx: u32,
   table_idx: u32,
@@ -90,15 +88,16 @@ fn start_instructions(
     );
      result.push(Call::with_stack(init_idx));
   }
+  let local = local_builder.add(I32);
   result.extend(vec![
     I32Const::create(0), // iovs base address
     CallIndirect::with_operands(
       imported_type_idx, table_idx, Vec::new(), I32Const::create(0),
     ), // get_test() -> iovs.base, iovs.length
-    LocalSet::with_stack(0), // set iovs.length
+    LocalSet::with_stack(local.clone()), // set iovs.length
     I32Store::with_stack(2, 0), // store iovs.base
     I32Const::create(4), // iovs length address
-    LocalGet::create(0), // get iovs.length
+    LocalGet::create(local), // get iovs.length
     I32Store::with_stack(2, 0), // store iovs.length
     Call::with_operands(fd_write_idx, vec![
       I32Const::create(1),  // file_descriptor - 1 for stdout

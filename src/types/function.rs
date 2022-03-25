@@ -29,6 +29,10 @@ impl FunctionType {
   pub fn new(parameters: Vec<u8>, result: Vec<u8>) -> Self {
     Self{ parameters, result }
   }
+
+  pub fn n_params(&self) -> u32 {
+    self.parameters.len() as u32
+  }
 }
 
 impl Compilable for FunctionType {

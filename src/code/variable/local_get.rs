@@ -16,25 +16,27 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-use crate::{Compilable, Instruction};
+use std::sync::Arc;
+
+use crate::Instruction;
+use crate::code::Locals;
 use crate::values::from_u32;
+use super::Local;
 
 #[derive(Debug)]
 pub struct LocalGet {
-  local_idx: u32,
+  local: Arc<Local>,
 }
 
 impl LocalGet {
-  pub fn create(local_idx: u32) -> Box<dyn Instruction> {
-    Box::new(Self{ local_idx })
+  pub fn create(local: Arc<Local>) -> Box<dyn Instruction> {
+    Box::new(Self{ local })
   }
 }
 
-impl Compilable for LocalGet {
-  fn compile(&self, buf: &mut Vec<u8>) {
+impl Instruction for LocalGet {
+  fn compile<'a>(&self, buf: &mut Vec<u8>, locals: &Locals<'a>) {
     buf.push(0x20);
-    buf.extend(&from_u32(self.local_idx));
+    buf.extend(&from_u32(locals.get_idx(&self.local)));
   }
 }
-
-impl Instruction for LocalGet {}

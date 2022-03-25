@@ -17,7 +17,7 @@
  */
 
 mod local;
-pub use local::{Local, LocalBuilder};
+pub use local::{Local, LocalBuilder, Locals};
 
 mod local_get;
 pub use local_get::LocalGet;

@@ -18,7 +18,17 @@
 
 use std::io::Read;
 
-use wasm_ir::{Body, Data, DataMode, FunctionType, I32, Import, Limit, Module};
+use wasm_ir::{
+  Body,
+  Data,
+  DataMode,
+  FunctionType,
+  I32,
+  Import,
+  LocalBuilder,
+  Limit,
+  Module,
+};
 use wasm_ir::code::control::Call;
 use wasm_ir::code::numeric::I32Const;
 use wasm_ir::code::memory::I32Store;
@@ -33,7 +43,7 @@ fn generate_hello_world() -> Module {
   ir.add_data(Data::new(
     "hello world\n".to_string().into_bytes(),
     DataMode::Active(
-      I32Const::create(8),
+      I32Const::with_const(8),
     ),
   ));
 
@@ -46,7 +56,7 @@ fn generate_hello_world() -> Module {
   ), fd_write_type);
 
   let start_type = FunctionType::new(vec![], vec![]);
-  let start_body = Body::new(Vec::new(), vec![
+  let start_body = Body::new(LocalBuilder::new(), vec![
     I32Store::with_operands(2, 0,
       I32Const::create(0),
       I32Const::create(8),
@@ -78,6 +88,7 @@ fn hello_world() {
   let ir = generate_hello_world();
   let binary = ir.compile();
   let mut embedder = common::Embedder::new("8420");
+
   embedder.run(binary);
   let mut stream = embedder.listener.incoming().next().unwrap().unwrap();
   let mut buf: [u8; 12] = [0; 12];

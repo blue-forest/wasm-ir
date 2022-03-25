@@ -16,36 +16,38 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-use crate::{Compilable, Instruction};
+use std::sync::Arc;
+
+use crate::Instruction;
+use crate::code::Locals;
 use crate::values::from_u32;
+use super::Local;
 
 #[derive(Debug)]
 pub struct LocalSet {
-  local_idx: u32,
-  value:     Option<Box<dyn Instruction>>,
+  local: Arc<Local>,
+  value: Option<Box<dyn Instruction>>,
 }
 
 impl LocalSet {
-  pub fn with_stack(local_idx: u32) -> Box<dyn Instruction> {
-    Box::new(Self{ local_idx, value: None })
+  pub fn with_stack(local: Arc<Local>) -> Box<dyn Instruction> {
+    Box::new(Self{ local, value: None })
   }
 
   pub fn with_operands(
-    local_idx: u32,
+    local: Arc<Local>,
     value: Box<dyn Instruction>
   ) -> Box<dyn Instruction> {
-    Box::new(Self{ local_idx, value: Some(value) })
+    Box::new(Self{ local, value: Some(value) })
   }
 }
 
-impl Compilable for LocalSet {
-  fn compile(&self, buf: &mut Vec<u8>) {
+impl Instruction for LocalSet {
+  fn compile<'a>(&self, buf: &mut Vec<u8>, locals: &Locals<'a>) {
     if let Some(value) = &self.value {
-      value.compile(buf);
+      value.compile(buf, locals);
     }
     buf.push(0x21);
-    buf.extend(&from_u32(self.local_idx));
+    buf.extend(&from_u32(locals.get_idx(&self.local)));
   }
 }
-
-impl Instruction for LocalSet {}

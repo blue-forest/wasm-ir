@@ -16,7 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-use crate::{Compilable, Instruction};
+use crate::{ConstInstruction, Instruction};
 use crate::values::from_u32;
 
 #[derive(Debug)]
@@ -26,13 +26,16 @@ impl I32Const {
   pub fn create(value: u32) -> Box<dyn Instruction> {
     Box::new(Self(value))
   }
+
+  pub fn with_const(value: u32) -> Box<dyn ConstInstruction> {
+    Box::new(Self(value))
+  }
 }
 
-impl Compilable for I32Const {
-  fn compile(&self, buf: &mut Vec<u8>) {
+impl ConstInstruction for I32Const {
+  fn const_compile(&self, buf: &mut Vec<u8>) {
     buf.push(0x41);
     buf.extend(from_u32(self.0));
   }
 }
 
-impl Instruction for I32Const {}

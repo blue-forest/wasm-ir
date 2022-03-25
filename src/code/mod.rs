@@ -18,7 +18,7 @@
 
 use std::fmt::Debug;
 
-use crate::Compilable;
+use crate::FunctionType;
 use crate::values::from_u32;
 
 pub mod control;
@@ -29,41 +29,45 @@ pub mod reference;
 pub mod table;
 pub mod variable;
 pub use variable::{Local, LocalBuilder};
+use variable::Locals;
 
 #[derive(Debug)]
 pub struct Body {
-  //locals:       LocalBuilder,
-  locals:       Vec<Local>,
+  locals:       LocalBuilder,
   instructions: Vec<Box<dyn Instruction>>,
 }
 
 impl Body {
   pub fn new(
-    // locals:       LocalBuilder,
-    locals:       Vec<Local>,
+    locals:       LocalBuilder,
     instructions: Vec<Box<dyn Instruction>>
   ) -> Self {
     Self{ locals, instructions }
   }
-}
 
-impl Compilable for Body {
-  fn compile(&self, buf: &mut Vec<u8>) {
-    // TODO: no allocation ?
-    // TODO: use localbuilder
-    let mut code = Vec::new(); // locals
-    code.extend(&from_u32(self.locals.len() as u32));
-    for local in self.locals.iter() {
-      local.compile(&mut code);
-    }
+  pub fn compile(&self, buf: &mut Vec<u8>, type_: &FunctionType) {
+    let mut code = Vec::new();
+    let locals = self.locals.compile(&mut code, type_);
     for instruction in self.instructions.iter() {
-      instruction.compile(&mut code);
+      instruction.compile(&mut code, &locals);
     }
-
     buf.extend(&from_u32((code.len() + 1) as u32)); // +1 for the end
     buf.extend(code);
     buf.push(0x0b); // end
   }
 }
 
-pub trait Instruction: Compilable + Debug {}
+pub trait Instruction: Debug {
+  fn compile<'a>(&self, buf: &mut Vec<u8>, locals: &Locals<'a>);
+}
+
+pub trait ConstInstruction: Instruction {
+  fn const_compile(&self, buf: &mut Vec<u8>);
+}
+
+impl<I: ConstInstruction> Instruction for I {
+  fn compile<'a>(&self, buf: &mut Vec<u8>, _locals: &Locals<'a>) {
+    self.const_compile(buf)
+  }
+}
+

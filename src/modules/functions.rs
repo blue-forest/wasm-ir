@@ -41,11 +41,6 @@ impl Module {
     (type_idx, function_idx)
   }
 
-  #[inline(always)]
-  pub fn add_type(&mut self, profile: FunctionType) -> u32 {
-    self.sec_type.push(profile)
-  }
-
   pub fn export_function(
     &mut self,
     name:    String,
@@ -100,6 +95,10 @@ impl FunctionSection {
 
   pub fn push(&mut self, type_idx: u32) {
     self.types.push(type_idx);
+  }
+
+  pub fn get(&self, idx: u32) -> Option<&u32> {
+    self.types.get(idx as usize)
   }
 }
 

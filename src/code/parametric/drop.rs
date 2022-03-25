@@ -16,7 +16,8 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-use crate::{Compilable, Instruction};
+use crate::Instruction;
+use crate::code::Locals;
 
 #[derive(Debug)]
 pub struct DropStack{}
@@ -27,10 +28,8 @@ impl DropStack {
   }
 }
 
-impl Compilable for DropStack {
-  fn compile(&self, buf: &mut Vec<u8>) {
+impl Instruction for DropStack {
+  fn compile<'a>(&self, buf: &mut Vec<u8>, _locals: &Locals<'a>) {
     buf.push(0x1a);
   }
 }
-
-impl Instruction for DropStack {}

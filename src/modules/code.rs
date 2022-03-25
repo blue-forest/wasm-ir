@@ -1,4 +1,4 @@
-use crate::{Body, Compilable};
+use crate::Body;
 use super::{Module, Section};
 
 #[derive(Debug)]
@@ -25,10 +25,10 @@ impl Section for CodeSection {
 
   fn len(&self) -> u32 { self.bodies.len() as u32 }
 
-  fn content(&self, _module: &Module) -> Vec<u8> {
+  fn content(&self, module: &Module) -> Vec<u8> {
     let mut result = Vec::new();
-    for body in self.bodies.iter() {
-      body.compile(&mut result);
+    for (i, body) in self.bodies.iter().enumerate() {
+      body.compile(&mut result, module.get_function_type(i as u32).unwrap());
     }
     result
   }

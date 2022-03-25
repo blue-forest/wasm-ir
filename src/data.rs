@@ -16,7 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-use crate::{Compilable, Instruction};
+use crate::{Compilable, ConstInstruction};
 use crate::values::from_u32;
 
 #[derive(Debug)]
@@ -42,7 +42,7 @@ impl Compilable for Data {
 #[derive(Debug)]
 pub enum DataMode {
   Passive,
-  Active(Box<dyn Instruction>)
+  Active(Box<dyn ConstInstruction>)
 }
 
 impl Compilable for DataMode {
@@ -51,7 +51,8 @@ impl Compilable for DataMode {
       Self::Passive             => buf.push(0x01),
       Self::Active(instruction) => {
         buf.push(0x00);
-        instruction.compile(buf);
+        // FIXME: constant expression
+        instruction.const_compile(buf);
         buf.push(0x0b); // end
       }
     }
