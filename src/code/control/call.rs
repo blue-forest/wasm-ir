@@ -16,7 +16,8 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-use crate::{Compilable, Instruction};
+use crate::Instruction;
+use crate::code::Locals;
 use crate::values::from_u32;
 
 #[derive(Debug)]
@@ -38,15 +39,13 @@ impl Call {
   }
 }
 
-impl Compilable for Call {
-  fn compile(&self, buf: &mut Vec<u8>) {
+impl Instruction for Call {
+  fn compile<'a>(&self, buf: &mut Vec<u8>, locals: &Locals<'a>) {
     for parameter in self.parameters.iter() {
-      parameter.compile(buf);
+      parameter.compile(buf, locals);
     }
     buf.push(0x10);
     buf.extend(&from_u32(self.function_idx));
   }
 }
-
-impl Instruction for Call {}
 

@@ -17,6 +17,7 @@
  */
 
 use crate::{
+  Compilable,
   Export,
   ExportDescription,
   Limit,
@@ -24,29 +25,62 @@ use crate::{
   ImportDescription,
 };
 
-use super::Module;
+use super::{Module, Section};
 use super::exports::ModuleExport;
 use super::imports::ModuleImport;
 
 impl Module {
   pub fn export_memory(&mut self, limit: Limit) {
     let mem_idx = self.sec_mem.len() as u32;
-    self.sec_mem.push(Box::new(limit));
-    self.sec_export.push(Box::new(ModuleExport{
+    self.sec_mem.push(limit);
+    self.sec_export.push(ModuleExport{
       export:      Export::new("memory".to_string()),
       description: ExportDescription::Mem(mem_idx),
-    }));
+    });
   }
 
   pub fn import_memory(&mut self, import: Import, limit: Limit) {
     let mem_idx = self.sec_mem.len() as u32;
-    self.sec_import.push(Box::new(ModuleImport{
+    self.sec_import.push(ModuleImport{
       import,
       description: ImportDescription::Mem(limit),
-    }));
-    self.sec_export.push(Box::new(ModuleExport{
+    });
+    self.sec_export.push(ModuleExport{
       export:      Export::new("memory".to_string()),
       description: ExportDescription::Mem(mem_idx),
-    }));
+    });
+  }
+}
+
+#[derive(Debug)]
+pub struct MemorySection {
+  memories: Vec<Limit>,
+}
+
+impl MemorySection {
+  pub fn new() -> Self {
+    Self{ memories: Vec::new() }
+  }
+
+  pub fn push(&mut self, memory: Limit) {
+    self.memories.push(memory);
+  }
+}
+
+impl Default for MemorySection {
+  fn default() -> Self { Self::new() }
+}
+
+impl Section for MemorySection {
+  fn section_id(&self) -> u8 { 0x05 }
+
+  fn len(&self) -> u32 { self.memories.len() as u32 }
+
+  fn content(&self, _module: &Module) -> Vec<u8> {
+    let mut result = Vec::new();
+    for memory in self.memories.iter() {
+      memory.compile(&mut result);
+    }
+    result
   }
 }

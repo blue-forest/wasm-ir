@@ -20,8 +20,10 @@ use crate::{
   Compilable,
   Import,
   ImportDescription,
+  Module,
 };
 use crate::values::from_u32;
+use super::Section;
 
 #[derive(Debug)]
 pub struct ModuleImport {
@@ -46,5 +48,38 @@ impl Compilable for ModuleImport {
         limit.compile(buf);
       }
     }
+  }
+}
+
+#[derive(Debug)]
+pub struct ImportSection {
+  imports: Vec<ModuleImport>,
+}
+
+impl ImportSection {
+  pub fn new() -> Self {
+    Self{ imports: Vec::new() }
+  }
+
+  pub fn push(&mut self, import: ModuleImport) {
+    self.imports.push(import);
+  }
+}
+
+impl Default for ImportSection {
+  fn default() -> Self { Self::new() }
+}
+
+impl Section for ImportSection {
+  fn section_id(&self) -> u8 { 0x02 }
+
+  fn len(&self) -> u32 { self.imports.len() as u32 }
+
+  fn content(&self, _module: &Module) -> Vec<u8> {
+    let mut result = Vec::new();
+    for import in self.imports.iter() {
+      import.compile(&mut result);
+    }
+    result
   }
 }

@@ -19,7 +19,7 @@
 use std::fmt::Debug;
 
 pub mod code;
-pub use code::{Body, Instruction, Local};
+pub use code::{Body, ConstInstruction, Instruction, Local, LocalBuilder};
 
 mod data;
 pub use data::{Data, DataMode};
@@ -31,13 +31,13 @@ mod exports;
 pub use exports::{Export, ExportDescription};
 
 mod functions;
-pub use functions::{Function, StartFunction};
+pub use functions::StartFunction;
 
 mod imports;
 pub use imports::{Import, ImportDescription};
 
 mod modules;
-pub use modules::Module;
+pub use modules::{Module, Section};
 
 mod tables;
 pub use tables::Table;

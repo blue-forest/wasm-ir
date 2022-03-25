@@ -16,7 +16,8 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-use crate::{Compilable, Instruction};
+use crate::Instruction;
+use crate::code::Locals;
 use crate::values::from_u32;
 
 #[derive(Debug)]
@@ -56,16 +57,16 @@ impl TableInit {
   }
 }
 
-impl Compilable for TableInit {
-  fn compile(&self, buf: &mut Vec<u8>) {
+impl Instruction for TableInit {
+  fn compile<'a>(&self, buf: &mut Vec<u8>, locals: &Locals<'a>) {
     if let Some(destination) = &self.destination {
-      destination.compile(buf);
+      destination.compile(buf, locals);
     }
     if let Some(offset) = &self.offset {
-      offset.compile(buf);
+      offset.compile(buf, locals);
     }
     if let Some(size) = &self.size {
-      size.compile(buf);
+      size.compile(buf, locals);
     }
     buf.push(0xfc);
     buf.extend(&from_u32(12));
@@ -73,5 +74,3 @@ impl Compilable for TableInit {
     buf.extend(&from_u32(self.table_idx));
   }
 }
-
-impl Instruction for TableInit {}

@@ -16,7 +16,8 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-use crate::{Compilable, Instruction};
+use crate::Instruction;
+use crate::code::Locals;
 use crate::values::from_u32;
 
 #[derive(Debug)]
@@ -48,15 +49,13 @@ impl I32Load {
   }
 }
 
-impl Compilable for I32Load {
-  fn compile(&self, buf: &mut Vec<u8>) {
+impl Instruction for I32Load {
+  fn compile<'a>(&self, buf: &mut Vec<u8>, locals: &Locals<'a>) {
     if let Some(address) = &self.address {
-      address.compile(buf);
+      address.compile(buf, locals);
     }
     buf.push(0x28);
     buf.extend(from_u32(self.align));
     buf.extend(from_u32(self.offset));
   }
 }
-
-impl Instruction for I32Load {}

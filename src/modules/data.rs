@@ -16,27 +16,44 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-use crate::{ConstInstruction, Instruction};
-use crate::values::from_u32;
+use crate::{Compilable, Data};
+use super::{Module, Section};
+
+impl Module {
+  pub fn add_data(&mut self, data: Data) {
+    self.sec_data.push(data);
+  }
+}
 
 #[derive(Debug)]
-pub struct RefFunc {
-  function_idx: u32,
+pub struct DataSection {
+  data: Vec<Data>,
 }
 
-impl RefFunc {
-  pub fn create(function_idx: u32) -> Box<dyn Instruction> {
-    Box::new(Self{ function_idx })
+impl DataSection {
+  pub fn new() -> Self {
+    Self{ data: Vec::new() }
   }
 
-  pub fn with_const(function_idx: u32) -> Box<dyn ConstInstruction> {
-    Box::new(Self{ function_idx })
+  pub fn push(&mut self, data: Data) {
+    self.data.push(data);
   }
 }
 
-impl ConstInstruction for RefFunc {
-  fn const_compile(&self, buf: &mut Vec<u8>) {
-    buf.push(0xd2);
-    buf.extend(&from_u32(self.function_idx));
+impl Default for DataSection {
+  fn default() -> Self { Self::new() }
+}
+
+impl Section for DataSection {
+  fn section_id(&self) -> u8 { 0x0b }
+
+  fn len(&self) -> u32 { self.data.len() as u32 }
+
+  fn content(&self, _module: &Module) -> Vec<u8> {
+    let mut result = Vec::new();
+    for data in self.data.iter() {
+      data.compile(&mut result);
+    }
+    result
   }
 }

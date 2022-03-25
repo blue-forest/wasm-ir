@@ -22,6 +22,7 @@ use crate::{
   ExportDescription,
 };
 use crate::values::from_u32;
+use super::{Module, Section};
 
 #[derive(Debug)]
 pub struct ModuleExport {
@@ -47,5 +48,38 @@ impl Compilable for ModuleExport {
       }
       _ => { todo!() }
     }
+  }
+}
+
+#[derive(Debug)]
+pub struct ExportSection {
+  exports: Vec<ModuleExport>,
+}
+
+impl ExportSection {
+  pub fn new() -> Self {
+    Self{ exports: Vec::new() }
+  }
+
+  pub fn push(&mut self, export: ModuleExport) {
+    self.exports.push(export);
+  }
+}
+
+impl Default for ExportSection {
+  fn default() -> Self { Self::new() }
+}
+
+impl Section for ExportSection {
+  fn section_id(&self) -> u8 { 0x07 }
+
+  fn len(&self) -> u32 { self.exports.len() as u32 }
+
+  fn content(&self, _module: &Module) -> Vec<u8> {
+    let mut result = Vec::new();
+    for export in self.exports.iter() {
+      export.compile(&mut result);
+    }
+    result
   }
 }

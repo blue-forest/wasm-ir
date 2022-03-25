@@ -16,7 +16,8 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-use crate::{Compilable, Instruction};
+use crate::Instruction;
+use crate::code::Locals;
 
 #[derive(Debug)]
 pub struct RefIsNull{}
@@ -27,10 +28,8 @@ impl RefIsNull {
   }
 }
 
-impl Compilable for RefIsNull {
-  fn compile(&self, buf: &mut Vec<u8>) {
+impl Instruction for RefIsNull {
+  fn compile<'a>(&self, buf: &mut Vec<u8>, _locals: &Locals<'a>) {
     buf.push(0xd1);
   }
 }
-
-impl Instruction for RefIsNull {}

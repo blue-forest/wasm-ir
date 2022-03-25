@@ -16,14 +16,13 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-use crate::{Compilable, Instruction};
-use crate::code::reference::RefInstruction;
+use crate::{Compilable, ConstInstruction};
 use crate::values::from_u32;
 
 #[derive(Debug)]
 pub struct Element {
   type_:     u8,
-  init_expr: Vec<Box<dyn RefInstruction>>,
+  init_expr: Vec<Box<dyn ConstInstruction>>,
   init_func: Vec<u32>,
   mode:      ElementMode,
 }
@@ -31,7 +30,7 @@ pub struct Element {
 impl Element {
   pub fn with_expr(
     type_: u8,
-    init:  Vec<Box<dyn RefInstruction>>,
+    init:  Vec<Box<dyn ConstInstruction>>,
     mode:  ElementMode,
   ) -> Self {
     Self{
@@ -57,7 +56,7 @@ impl Element {
     } else {
       buf.push(0x01);
       for instruction in self.init_expr.iter() {
-        instruction.compile(buf);
+        instruction.const_compile(buf);
       }
       buf.push(0x0b);
     }
@@ -88,7 +87,7 @@ impl Compilable for Element {
         } else {
           buf.push(byte);
         }
-        offset.compile(buf);
+        offset.const_compile(buf);
         buf.push(0x0b);
         if *table_idx != 0 {
           buf.push(self.type_);
@@ -108,7 +107,7 @@ pub enum ElementMode {
   Passive,
   Active{
     table_idx: u32,
-    offset:    Box<dyn Instruction>,
+    offset:    Box<dyn ConstInstruction>,
   },
   Declarative,
 }

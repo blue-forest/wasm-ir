@@ -24,6 +24,7 @@ use wasm_ir::{
   FunctionType,
   I32,
   Limit,
+  LocalBuilder,
   Module,
 };
 use wasm_ir::code::numeric::I32Const;
@@ -37,11 +38,11 @@ fn get_name(is_expr: bool, module: &mut Module, mode: ElementMode) {
   module.add_data(Data::new(
     test_str.clone(),
     DataMode::Active(
-      I32Const::create(test_address),
+      I32Const::with_const(test_address),
     ),
   ));
 
-  let body = Body::new(Vec::new(), vec![
+  let body = Body::new(LocalBuilder::new(), vec![
     I32Const::create(test_address),
     I32Const::create(test_str.len() as u32)
   ]);
@@ -50,7 +51,7 @@ fn get_name(is_expr: bool, module: &mut Module, mode: ElementMode) {
       type_(), body,
     );
     module.add_expression_element(vec![
-      RefFunc::create(function_idx),
+      RefFunc::with_const(function_idx),
     ], mode);
   } else {
     module.add_function_element(
@@ -64,7 +65,7 @@ fn init(module: &mut Module) {
   module.export_function(
     "init".to_string(),
     FunctionType::new(Vec::new(), Vec::new()),
-    Body::new(Vec::new(), vec![
+    Body::new(LocalBuilder::new(), vec![
       TableInit::with_operands(0, 0,
         I32Const::create(0), // region start
         I32Const::create(0), // offset

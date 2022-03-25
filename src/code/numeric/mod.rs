@@ -18,3 +18,5 @@
 
 mod i32_;
 pub use i32_::*;
+mod i64_;
+pub use i64_::*;

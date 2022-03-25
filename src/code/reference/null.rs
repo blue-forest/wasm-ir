@@ -16,9 +16,7 @@
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
 
-use crate::{Compilable, Instruction};
-
-use super::RefInstruction;
+use crate::{ConstInstruction, Instruction};
 
 #[derive(Debug)]
 pub struct RefNull {
@@ -26,19 +24,19 @@ pub struct RefNull {
 }
 
 impl RefNull {
-  pub fn create(type_: u8) -> Box<dyn RefInstruction> {
+  pub fn create(type_: u8) -> Box<dyn Instruction> {
+    Box::new(Self{ type_ })
+  }
+
+  pub fn with_const(type_: u8) -> Box<dyn ConstInstruction> {
     Box::new(Self{ type_ })
   }
 }
 
-impl Compilable for RefNull {
-  fn compile(&self, buf: &mut Vec<u8>) {
+impl ConstInstruction for RefNull {
+  fn const_compile(&self, buf: &mut Vec<u8>) {
     buf.push(0xd0);
     buf.push(self.type_);
   }
 }
-
-impl Instruction for RefNull {}
-
-impl RefInstruction for RefNull {}
 

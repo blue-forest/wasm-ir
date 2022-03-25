@@ -20,33 +20,17 @@ use crate::Compilable;
 use crate::values::from_u32;
 
 #[derive(Debug)]
-pub struct Function(u32);
+pub struct StartFunction(u32);
 
-impl Function {
+impl StartFunction {
   pub fn new(value: u32) -> Self {
     Self(value)
   }
 }
 
-impl Compilable for Function {
-  fn compile(&self, buf: &mut Vec<u8>) {
-    buf.extend(&from_u32(self.0));
-  }
-}
-
-#[derive(Debug)]
-pub struct StartFunction(Function);
-
-impl StartFunction {
-  pub fn new(value: u32) -> Self {
-    Self(Function::new(value))
-  }
-}
-
 impl Compilable for StartFunction {
   fn compile(&self, buf: &mut Vec<u8>) {
-    let mut section = Vec::new();
-    self.0.compile(&mut section);
+    let section = from_u32(self.0);
     buf.push(0x08); // section id
     buf.extend(&from_u32(section.len() as u32));
     buf.extend(section);
