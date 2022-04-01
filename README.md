@@ -1,6 +1,6 @@
 # WebAssembly Intermediate Representation
 
-[![License](https://img.shields.io/github/license/theblueforest/wasm-ir)](./COPYING)
+[![License](https://img.shields.io/github/license/blue-forest/wasm-ir)](./COPYING)
 [![Maintenance](https://img.shields.io/badge/maintained-yes-green.svg)](#)
 [![Stability](https://img.shields.io/badge/stable-no-red.svg)](#)
 [![Crates.io latest version](https://img.shields.io/crates/v/wasm-ir)](https://crates.io/crates/wasm-ir/versions)
