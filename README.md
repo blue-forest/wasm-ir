@@ -1,15 +1,14 @@
 # WebAssembly Intermediate Representation
 
 [![License](https://img.shields.io/github/license/blue-forest/wasm-ir)](./COPYING)
-[![Maintenance](https://img.shields.io/badge/maintained-yes-green.svg)](#)
+[![Maintenance](https://img.shields.io/badge/maintained-no-red.svg)](#)
 [![Stability](https://img.shields.io/badge/stable-no-red.svg)](#)
 [![Crates.io latest version](https://img.shields.io/crates/v/wasm-ir)](https://crates.io/crates/wasm-ir/versions)
 [![Crates.io total downloads](https://img.shields.io/crates/d/wasm-ir)](https://crates.io/crates/wasm-ir)
-[![Liberapay receiving](https://img.shields.io/liberapay/receives/BlueForest)](https://liberapay.com/BlueForest)
 
 This is an Intermediate Representation which can be compiled into WebAssembly.
 
-The source code is in an experimental state and will be fully documented in its final version.
+The source code is in an experimental state and **has been archived**.
 
 Warning : **we do not recommend to use this code in a production environment**, even if it theoretically works we haven't finished writing tests to make sure everything works and avoid regressions.
 
